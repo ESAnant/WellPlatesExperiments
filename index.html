@@ -3,315 +3,709 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PlateMaster Pro - Advanced Experiment Designer</title>
+    <title>PlateMaster Pro - Experimental Design Studio</title>
     <style>
-        /* --- Modern CSS Variables & Font --- */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        /* --- Import Google Fonts & Icons --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+        
+        /* --- CSS Variables --- */
         :root {
-            --primary-color: #2563eb;
-            --secondary-color: #475569;
-            --background-color: #f1f5f9;
-            --widget-bg-color: #ffffff;
-            --text-color: #1e293b;
-            --border-color: #cbd5e1;
-            --success-color: #16a34a;
-            --danger-color: #dc2626;
-            --font-family: 'Inter', sans-serif;
+            --primary-color: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* --- General Styling --- */
-        body {
-            font-family: var(--font-family);
-            background-color: var(--background-color);
-            color: var(--text-color);
+        /* --- Base Styles --- */
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 24px;
+            padding: 0;
         }
-        .container {
-            display: flex;
-            gap: 24px;
-            max-width: 1800px;
-            margin: 0 auto;
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
-        .column {
+
+        /* --- Layout --- */
+        .app-container {
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            gap: 24px;
         }
-        .input-column { flex: 1; max-width: 450px; }
-        .output-column { flex: 2; }
 
-        /* --- Header --- */
-        header {
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 2rem 1.5rem;
             text-align: center;
-            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
         }
-        header h1 {
-            font-size: 2.8em;
-            color: var(--text-color);
-            margin: 0;
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='7' cy='7' r='7'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+            animation: drift 20s linear infinite;
         }
-        header h2 {
-            font-size: 1.2em;
-            color: var(--secondary-color);
-            margin: 5px 0 0 0;
-            font-weight: 400;
+
+        @keyframes drift {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(60px); }
         }
-        
-        /* --- Widgets --- */
-        .widget {
-            background-color: var(--widget-bg-color);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
-            border: 1px solid var(--border-color);
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
         }
-        .widget h3 {
-            font-size: 1.25em;
-            margin-top: 0;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border-color);
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 2rem;
+            padding: 2rem 1.5rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* --- Cards --- */
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            overflow: hidden;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 0.75rem;
+        }
+
+        .card-header h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-header i {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
         }
 
         /* --- Form Elements --- */
-        label { display: block; margin-bottom: 8px; font-weight: 600; }
-        input[type="text"], input[type="number"], select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            box-sizing: border-box;
-            margin-bottom: 16px;
-            font-family: var(--font-family);
-            font-size: 1em;
+        .form-group {
+            margin-bottom: 1.5rem;
         }
-        .button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 18px;
-            border-radius: 6px;
-            cursor: pointer;
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
             width: 100%;
-            font-size: 1.05em;
-            font-weight: 600;
-            transition: all 0.2s;
-            display: flex;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            transition: var(--transition);
+            background: var(--surface);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            user-select: none;
         }
-        .button:hover { filter: brightness(1.1); }
-        .button.secondary { background-color: var(--secondary-color); }
-        .button.danger { background-color: var(--danger-color); }
-        
-        /* --- Tag Input System --- */
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #475569;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--border-light);
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* --- Tag System --- */
         .tag-container {
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.5rem;
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 16px;
-        }
-        .tag {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 0.9em;
-            display: flex;
+            gap: 0.5rem;
+            min-height: 2.5rem;
             align-items: center;
+            background: var(--surface);
+            transition: var(--transition);
         }
-        .tag .remove-tag { cursor: pointer; margin-left: 8px; font-weight: bold; }
-        .tag-input { border: none; flex-grow: 1; outline: none; padding: 5px; background: transparent; }
+
+        .tag-container:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            animation: tagAppear 0.2s ease-out;
+        }
+
+        @keyframes tagAppear {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            padding: 0.125rem;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .tag-remove:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tag-input {
+            border: none;
+            outline: none;
+            flex: 1;
+            min-width: 120px;
+            padding: 0.25rem;
+            font-size: 0.875rem;
+            background: transparent;
+        }
 
         /* --- Plate Visualization --- */
-        #plate-visualization-container { position: relative; }
+        .plate-container {
+            position: relative;
+            text-align: center;
+        }
+
         .plate-svg {
-            border: 1px solid var(--border-color);
-            background-color: #f8fafc;
-            border-radius: 8px;
+            background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
             width: 100%;
             height: auto;
+            max-width: 800px;
         }
-        .well { stroke: #475569; stroke-width: 0.5; transition: all 0.2s; cursor: pointer; }
-        .well:hover { transform: scale(1.05); stroke-width: 1.5; }
-        .well-text, .well-subtext { font-family: var(--font-family); pointer-events: none; }
-        .well-text { font-weight: 600; fill: white; }
-        .well-subtext { fill: var(--secondary-color); font-size: 10px; }
-        .row-label, .col-label { font-size: 14px; font-weight: 600; fill: var(--secondary-color); }
-        #tooltip {
+
+        .well {
+            stroke: var(--text-secondary);
+            stroke-width: 0.5;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .well:hover {
+            stroke-width: 2;
+            filter: brightness(1.1);
+            transform: scale(1.05);
+        }
+
+        .well-text {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            fill: white;
+            pointer-events: none;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .well-subtext {
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
+            fill: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .plate-labels {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            fill: var(--text-secondary);
+        }
+
+        /* --- Tooltip --- */
+        .tooltip {
             position: absolute;
-            background-color: rgba(30, 41, 59, 0.95);
+            background: rgba(15, 23, 42, 0.95);
             color: white;
-            padding: 12px;
-            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
             pointer-events: none;
             opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.2s, transform 0.2s;
-            font-size: 0.95em;
-            white-space: pre;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: translateY(8px);
+            transition: var(--transition);
+            box-shadow: var(--shadow-lg);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
         }
 
-        /* --- Improved Calculator Layout --- */
-        .calc-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
+        .tooltip.show {
+            opacity: 1;
+            transform: translateY(0);
         }
-        .calc-result-box {
-            grid-column: 1 / -1;
-            background-color: #eef2ff;
-            border: 1px solid #c7d2fe;
-            color: #312e81;
-            padding: 16px;
-            border-radius: 8px;
-            margin-top: 10px;
+
+        /* --- Legend --- */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-light);
         }
-        .calc-result-box h4 { margin: 0 0 10px 0; }
-        
-        /* --- Plate Summary Layout --- */
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* --- Summary Grid --- */
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
-        .summary-item {
-            background-color: #f8fafc;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-        .summary-item .value { font-size: 1.5em; font-weight: 700; color: var(--primary-color); }
-        .summary-item .label { font-size: 0.9em; color: var(--secondary-color); }
 
+        .summary-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--border-light);
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+
+        .summary-item:hover {
+            background: var(--border);
+        }
+
+        .summary-value {
+            display: block;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .summary-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- Calculator --- */
+        .calc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .calc-result {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 1px solid #93c5fd;
+            color: #1e40af;
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .calc-result.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            0% { opacity: 0; transform: translateY(-8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Loading & States --- */
+        .loading {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .header {
+                padding: 1.5rem 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 1.5rem 1rem;
+            }
+        }
     </style>
 </head>
 <body>
-
-    <header>
-        <h1>PlateMaster Pro</h1>
-        <h2>Advanced Web-Based Tool for Experimental Design and Visualization</h2>
-    </header>
-
-    <div class="container">
-        <!-- ==== INPUT COLUMN ==== -->
-        <div class="column input-column">
-            <!-- Experiment Setup Widget -->
-            <div class="widget">
-                <h3>1. Experiment Setup</h3>
-                <label for="exp-name">Experiment Name:</label>
-                <input type="text" id="exp-name" placeholder="e.g., Antibiotic Synergy Test">
-
-                <label for="plate-format">Plate Format:</label>
-                <select id="plate-format">
-                    <option value="96">96-Well Plate</option>
-                    <option value="48">48-Well Plate</option>
-                    <option value="24">24-Well Plate</option>
-                    <option value="12">12-Well Plate</option>
-                    <option value="6">6-Well Plate</option>
-                </select>
-                
-                <label for="group-input">Groups (Press Enter to add):</label>
-                <div class="tag-container" id="group-tags">
-                    <input type="text" id="group-input" class="tag-input" placeholder="e.g., Control, So, Fn...">
-                </div>
-
-                <label for="timepoint-input">Time Points (Press Enter to add):</label>
-                <div class="tag-container" id="timepoint-tags">
-                    <input type="text" id="timepoint-input" class="tag-input" placeholder="e.g., 4h, 24h, 48h...">
-                </div>
-
-                <label for="replicates">Replicates per Condition:</label>
-                <input type="number" id="replicates" value="3" min="1">
-            </div>
-
-            <!-- Presets Widget -->
-            <div class="widget">
-                <h3>2. Custom Presets</h3>
-                <label for="preset-name">Save Current Setup as Preset:</label>
-                <input type="text" id="preset-name" placeholder="e.g., My Standard Assay">
-                <button class="button secondary" onclick="app.savePreset()">Save Preset</button>
-                <hr style="margin: 20px 0; border-color: var(--border-color);">
-                <label for="preset-select">Load a Saved Preset:</label>
-                <select id="preset-select">
-                    <option value="">-- Select a preset --</option>
-                </select>
-                <div style="display:flex; gap: 10px; margin-top: 10px;">
-                    <button class="button" onclick="app.loadPreset()">Load</button>
-                    <button class="button danger" onclick="app.deletePreset()">Delete</button>
-                </div>
-            </div>
-
-             <!-- Calculator Widget -->
-            <div class="widget">
-                <h3>3. Dilution Calculator</h3>
-                <div class="calc-grid">
-                    <div>
-                        <label>Stock Conc. (C1)</label>
-                        <input type="number" id="c1" placeholder="1000">
-                    </div>
-                     <div>
-                        <label>Stock Unit</label>
-                        <select id="c1-unit"><option>mM</option><option>µM</option><option>mg/mL</option></select>
-                    </div>
-                    <div>
-                        <label>Final Conc. (C2)</label>
-                        <input type="number" id="c2" placeholder="50">
-                    </div>
-                     <div>
-                        <label>Final Unit</label>
-                        <select id="c2-unit"><option>µM</option><option>mM</option><option>mg/mL</option></select>
-                    </div>
-                     <div style="grid-column: 1 / -1;">
-                        <label>Final Volume (V2) in µL</label>
-                        <input type="number" id="v2" placeholder="200">
-                    </div>
-                </div>
-                 <button class="button" onclick="app.calculateDilution()" style="margin-top: 16px;">Calculate Required Volume</button>
-                 <div id="calc-result" class="calc-result-box" style="display:none;"></div>
-            </div>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-flask"></i> PlateMaster Pro</h1>
+            <p>Advanced experimental design for modern laboratories</p>
         </div>
 
-        <!-- ==== OUTPUT COLUMN ==== -->
-        <div class="column output-column">
-            <!-- Plate Visualization Widget -->
-            <div class="widget">
-                <h3 id="plate-title">Plate Layout</h3>
-                <div id="plate-visualization-container">
-                    <!-- SVG will be dynamically generated here -->
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Column: Controls -->
+            <div class="controls-column">
+                <!-- Experiment Setup -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-cog"></i>
+                        <h3>Experiment Setup</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label" for="exp-name">
+                                <i class="fas fa-tag"></i> Experiment Name
+                            </label>
+                            <input type="text" id="exp-name" class="form-input" 
+                                   placeholder="e.g., Antibiotic Synergy Test">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="plate-format">
+                                <i class="fas fa-th"></i> Plate Format
+                            </label>
+                            <select id="plate-format" class="form-input form-select">
+                                <option value="96">96-Well Plate</option>
+                                <option value="48">48-Well Plate</option>
+                                <option value="24">24-Well Plate</option>
+                                <option value="12">12-Well Plate</option>
+                                <option value="6">6-Well Plate</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-layer-group"></i> Groups
+                            </label>
+                            <div class="tag-container" id="group-tags">
+                                <input type="text" id="group-input" class="tag-input" 
+                                       placeholder="Type group name and press Enter">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-clock"></i> Time Points
+                            </label>
+                            <div class="tag-container" id="timepoint-tags">
+                                <input type="text" id="timepoint-input" class="tag-input" 
+                                       placeholder="e.g., 4h, 24h, 48h">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="replicates">
+                                <i class="fas fa-copy"></i> Replicates per Condition
+                            </label>
+                            <input type="number" id="replicates" class="form-input" 
+                                   value="3" min="1" max="12">
+                        </div>
+
+                        <button class="btn btn-primary btn-full" onclick="app.generateLayout()">
+                            <i class="fas fa-magic"></i> Generate Layout
+                        </button>
+                    </div>
                 </div>
-                <div id="legend" style="margin-top: 20px; padding-top:20px; border-top: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 20px;"></div>
+
+                <!-- Presets -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-bookmark"></i>
+                        <h3>Quick Presets</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label" for="preset-name">Save Current Setup</label>
+                            <input type="text" id="preset-name" class="form-input" 
+                                   placeholder="Enter preset name">
+                        </div>
+                        <button class="btn btn-secondary btn-full" onclick="app.savePreset()">
+                            <i class="fas fa-save"></i> Save Preset
+                        </button>
+
+                        <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border-light);">
+
+                        <div class="form-group">
+                            <label class="form-label" for="preset-select">Load Saved Preset</label>
+                            <select id="preset-select" class="form-input form-select">
+                                <option value="">-- Select a preset --</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-outline" onclick="app.loadPreset()" style="flex: 1;">
+                                <i class="fas fa-upload"></i> Load
+                            </button>
+                            <button class="btn btn-danger" onclick="app.deletePreset()" style="flex: 1;">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calculator -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-calculator"></i>
+                        <h3>Dilution Calculator</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="calc-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="c1">Stock Conc. (C1)</label>
+                                <input type="number" id="c1" class="form-input" placeholder="1000">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="c1-unit">Unit</label>
+                                <select id="c1-unit" class="form-input form-select">
+                                    <option value="mM">mM</option>
+                                    <option value="µM">µM</option>
+                                    <option value="mg/mL">mg/mL</option>
+                                    <option value="µg/mL">µg/mL</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="c2">Final Conc. (C2)</label>
+                                <input type="number" id="c2" class="form-input" placeholder="50">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="c2-unit">Unit</label>
+                                <select id="c2-unit" class="form-input form-select">
+                                    <option value="µM">µM</option>
+                                    <option value="mM">mM</option>
+                                    <option value="mg/mL">mg/mL</option>
+                                    <option value="µg/mL">µg/mL</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="v2">Final Volume (µL)</label>
+                            <input type="number" id="v2" class="form-input" placeholder="200">
+                        </div>
+                        <button class="btn btn-success btn-full" onclick="app.calculateDilution()">
+                            <i class="fas fa-equals"></i> Calculate
+                        </button>
+                        <div id="calc-result" class="calc-result"></div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Summary & Export Widget -->
-            <div class="widget">
-                <h3>Plate Summary & Export</h3>
-                <div class="summary-grid" id="summary-grid">
-                    <!-- Summary items will be generated here -->
+            <!-- Right Column: Visualization -->
+            <div class="visualization-column">
+                <!-- Plate Display -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-eye"></i>
+                        <h3 id="plate-title">Plate Visualization</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="plate-container" id="plate-container">
+                            <!-- SVG will be inserted here -->
+                        </div>
+                        <div class="legend" id="legend"></div>
+                    </div>
                 </div>
-                 <div style="display:flex; gap: 10px; margin-top: 20px; padding-top:20px; border-top: 1px solid var(--border-color);">
-                    <button class="button secondary" onclick="app.exportSVG()">Export as SVG</button>
-                    <button class="button secondary" onclick="app.exportPNG()">Export as PNG</button>
-                    <button class="button secondary" onclick="app.exportCSV()">Export as CSV</button>
+
+                <!-- Summary & Export -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar"></i>
+                        <h3>Summary & Export</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="summary-grid" id="summary-grid"></div>
+                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                            <button class="btn btn-outline" onclick="app.exportPNG()" style="flex: 1;">
+                                <i class="fas fa-image"></i> PNG
+                            </button>
+                            <button class="btn btn-outline" onclick="app.exportSVG()" style="flex: 1;">
+                                <i class="fas fa-vector-square"></i> SVG
+                            </button>
+                            <button class="btn btn-outline" onclick="app.exportCSV()" style="flex: 1;">
+                                <i class="fas fa-file-csv"></i> CSV
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div id="tooltip"></div>
+
+    <div class="tooltip" id="tooltip"></div>
 
     <script>
-        class PlateMasterWebApp {
+        class PlateMasterApp {
             constructor() {
-                // ... (previous constructor content)
                 this.plateConfigs = {
                     "96": { rows: 8, cols: 12, rowLabels: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] },
                     "48": { rows: 6, cols: 8, rowLabels: ['A', 'B', 'C', 'D', 'E', 'F'] },
@@ -321,263 +715,515 @@
                 };
                 this.currentLayout = [];
                 this.colors = {};
+                this.init();
+            }
+
+            init() {
                 this.setupEventListeners();
-                this.loadPresetsIntoSelect();
-                this.initUI();
+                this.loadPresets();
+                this.updateSummary();
+                this.drawEmptyPlate();
             }
 
             setupEventListeners() {
-                document.getElementById('group-input').addEventListener('keypress', e => {
-                    if (e.key === 'Enter') { e.preventDefault(); this.addTag('group-tags', e.target.value); }
-                });
-                document.getElementById('timepoint-input').addEventListener('keypress', e => {
-                    if (e.key === 'Enter') { e.preventDefault(); this.addTag('timepoint-tags', e.target.value); }
-                });
-                // Add event listener to the main "Generate" button
-                document.querySelector('.input-column').addEventListener('click', (e) => {
-                    if (e.target.tagName === 'BUTTON' && e.target.textContent.includes('Generate')) {
-                        this.generateLayout();
+                // Tag inputs
+                document.getElementById('group-input').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.addTag('group-tags', e.target.value);
                     }
                 });
+
+                document.getElementById('timepoint-input').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.addTag('timepoint-tags', e.target.value);
+                    }
+                });
+
+                // Plate format change
+                document.getElementById('plate-format').addEventListener('change', () => {
+                    this.updateSummary();
+                    this.drawEmptyPlate();
+                });
+
+                // Replicates change
+                document.getElementById('replicates').addEventListener('input', () => {
+                    this.updateSummary();
+                });
             }
 
-            // ... (rest of the JS class, with modifications below)
+            addTag(containerId, text) {
+                text = text.trim();
+                if (!text) return;
 
-            initUI() {
-                const button = document.createElement('button');
-                button.className = 'button';
-                button.innerHTML = `Generate Plate Layout`;
-                document.querySelector('.input-column').appendChild(button);
-                this.updateSummary(true);
-                this.drawPlate(this.getCurrentConfig(), true);
-            }
-
-            // ... (addTag, getTags methods are the same)
-
-             generateLayout() {
-                const config = this.getCurrentConfig();
-                if (config.groups.length === 0 || config.timepoints.length === 0) {
-                    alert('Please define at least one group and one time point.');
-                    return;
-                }
-
-                const totalNeeded = config.groups.length * config.timepoints.length * config.replicates;
-                const capacity = config.plateConfig.rows * config.plateConfig.cols;
-                if (totalNeeded > capacity) {
-                    alert(`Error: ${totalNeeded} wells are required, but a ${config.plateFormat}-well plate only has ${capacity}.`);
-                    return;
-                }
+                const container = document.getElementById(containerId);
+                const existingTags = this.getTags(containerId);
                 
-                this.generateColors(config.groups);
-                this.currentLayout = [];
-                let i = 0;
-                for (const group of config.groups) {
-                    for (const timepoint of config.timepoints) {
-                        for (let r = 1; r <= config.replicates; r++) {
-                            this.currentLayout.push({ group, timepoint, replicate: r, well: this.getWellName(i, config.plateConfig) });
-                            i++;
-                        }
-                    }
-                }
-                this.drawPlate(config);
+                if (existingTags.includes(text)) return;
+
+                const tag = document.createElement('div');
+                tag.className = 'tag';
+                tag.innerHTML = `
+                    <span>${text}</span>
+                    <span class="tag-remove" onclick="this.parentElement.remove(); app.updateSummary();">
+                        <i class="fas fa-times"></i>
+                    </span>
+                `;
+                
+                const input = container.querySelector('.tag-input');
+                container.insertBefore(tag, input);
+                input.value = '';
+                
                 this.updateSummary();
             }
 
-            // ... (getCurrentConfig, getWellName, generateColors methods are the same)
+            getTags(containerId) {
+                const container = document.getElementById(containerId);
+                const tags = container.querySelectorAll('.tag span:first-child');
+                return Array.from(tags).map(tag => tag.textContent);
+            }
 
-            drawPlate(config, isEmpty = false) {
-                const { rows, cols, rowLabels } = config.plateConfig;
-                const svgNS = "http://www.w3.org/2000/svg";
-                const vizContainer = document.getElementById('plate-visualization-container');
-                vizContainer.innerHTML = ''; // Clear previous
+            generateLayout() {
+                const groups = this.getTags('group-tags');
+                const timepoints = this.getTags('timepoint-tags');
+                const replicates = parseInt(document.getElementById('replicates').value);
+                const plateFormat = document.getElementById('plate-format').value;
+                const plateConfig = this.plateConfigs[plateFormat];
+
+                if (groups.length === 0) {
+                    this.showError('Please add at least one group.');
+                    return;
+                }
+
+                if (timepoints.length === 0) {
+                    this.showError('Please add at least one time point.');
+                    return;
+                }
+
+                const totalNeeded = groups.length * timepoints.length * replicates;
+                const capacity = plateConfig.rows * plateConfig.cols;
+
+                if (totalNeeded > capacity) {
+                    this.showError(`Design requires ${totalNeeded} wells but only ${capacity} available.`);
+                    return;
+                }
+
+                this.generateColors(groups);
+                this.currentLayout = [];
                 
-                // Dynamic sizing
-                const cell_size = 60;
-                const svgWidth = cols * cell_size + 60;
-                const svgHeight = rows * cell_size + 60;
-                const svg = document.createElementNS(svgNS, "svg");
-                svg.setAttribute('viewBox', `0 0 ${svgWidth} ${svgHeight}`);
-                svg.classList.add('plate-svg');
-
-                // Labels... (same as before but with dynamic sizing)
-                for (let i = 0; i < rows; i++) {
-                    const label = document.createElementNS(svgNS, 'text');
-                    label.setAttribute('x', 25);
-                    label.setAttribute('y', i * cell_size + 35 + cell_size/2);
-                    label.setAttribute('text-anchor', 'middle');
-                    label.textContent = rowLabels[i];
-                    label.classList.add('row-label');
-                    svg.appendChild(label);
-                }
-                for (let j = 0; j < cols; j++) {
-                     const label = document.createElementNS(svgNS, 'text');
-                    label.setAttribute('x', j * cell_size + 35 + cell_size/2);
-                    label.setAttribute('y', 35);
-                    label.setAttribute('text-anchor', 'middle');
-                    label.textContent = j + 1;
-                    label.classList.add('col-label');
-                    svg.appendChild(label);
-                }
-
-                // Wells... (same as before but with dynamic sizing)
-                 for (let i = 0; i < rows; i++) {
-                    for (let j = 0; j < cols; j++) {
-                        const wellData = this.currentLayout.find(w => w.well === `${rowLabels[i]}${j+1}`);
-                        const circle = document.createElementNS(svgNS, 'circle');
-                        const cx = j * cell_size + 35 + cell_size/2;
-                        const cy = i * cell_size + 35 + cell_size/2;
-                        circle.setAttribute('cx', cx);
-                        circle.setAttribute('cy', cy);
-                        circle.setAttribute('r', cell_size/2.5);
-                        circle.classList.add('well');
-                        circle.setAttribute('fill', wellData ? this.colors[wellData.group] : '#e2e8f0');
-                        
-                        circle.onmousemove = e => this.showTooltip(e, wellData);
-                        circle.onmouseout = () => this.hideTooltip();
-                        svg.appendChild(circle);
-
-                        if (wellData) {
-                            const text = document.createElementNS(svgNS, 'text');
-                            text.setAttribute('x', cx);
-                            text.setAttribute('y', cy);
-                            text.setAttribute('text-anchor', 'middle');
-                            text.setAttribute('dy', '0.3em');
-                            text.classList.add('well-text');
-                            text.style.fontSize = `${cell_size/5}px`;
-                            text.textContent = wellData.group.length > 7 ? wellData.group.substring(0,3)+"." : wellData.group;
-                            svg.appendChild(text);
+                let wellIndex = 0;
+                for (const group of groups) {
+                    for (const timepoint of timepoints) {
+                        for (let r = 1; r <= replicates; r++) {
+                            this.currentLayout.push({
+                                group,
+                                timepoint,
+                                replicate: r,
+                                well: this.getWellName(wellIndex, plateConfig)
+                            });
+                            wellIndex++;
                         }
                     }
                 }
-                vizContainer.appendChild(svg);
-                this.drawLegend(isEmpty ? [] : config.groups);
-                document.getElementById('plate-title').textContent = isEmpty ? "Plate Layout" : (config.expName || 'Untitled Experiment');
-            }
-            
-            // ... (drawLegend, showTooltip, hideTooltip methods are the same)
-            // ... (Preset Management methods are the same)
-            
-            calculateDilution() {
-                const c1 = parseFloat(document.getElementById('c1').value);
-                const c1_unit = document.getElementById('c1-unit').value;
-                const c2 = parseFloat(document.getElementById('c2').value);
-                const c2_unit = document.getElementById('c2-unit').value;
-                const v2 = parseFloat(document.getElementById('v2').value);
+
+                this.drawPlate();
+                this.updateSummary();
+                this.updateLegend(groups);
                 
-                if (isNaN(c1) || isNaN(c2) || isNaN(v2) || c1 === 0) {
-                    alert("Please enter valid numbers in all fields.");
+                document.getElementById('plate-title').innerHTML = `
+                    <i class="fas fa-eye"></i>
+                    ${document.getElementById('exp-name').value || 'Untitled Experiment'}
+                `;
+            }
+
+            generateColors(groups) {
+                const colors = [
+                    '#6366f1', '#8b5cf6', '#06b6d4', '#10b981', 
+                    '#f59e0b', '#ef4444', '#ec4899', '#84cc16'
+                ];
+                
+                this.colors = {};
+                groups.forEach((group, i) => {
+                    this.colors[group] = colors[i % colors.length];
+                });
+            }
+
+            getWellName(index, plateConfig) {
+                const row = plateConfig.rowLabels[Math.floor(index / plateConfig.cols)];
+                const col = (index % plateConfig.cols) + 1;
+                return `${row}${col}`;
+            }
+
+            drawEmptyPlate() {
+                const plateFormat = document.getElementById('plate-format').value;
+                const plateConfig = this.plateConfigs[plateFormat];
+                this.drawPlateStructure(plateConfig, []);
+            }
+
+            drawPlate() {
+                const plateFormat = document.getElementById('plate-format').value;
+                const plateConfig = this.plateConfigs[plateFormat];
+                this.drawPlateStructure(plateConfig, this.currentLayout);
+            }
+
+            drawPlateStructure(plateConfig, layout) {
+                const { rows, cols, rowLabels } = plateConfig;
+                const container = document.getElementById('plate-container');
+                container.innerHTML = '';
+
+                const cellSize = Math.min(60, 800 / cols);
+                const svgWidth = cols * cellSize + 80;
+                const svgHeight = rows * cellSize + 80;
+
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('viewBox', `0 0 ${svgWidth} ${svgHeight}`);
+                svg.classList.add('plate-svg');
+
+                // Draw row labels
+                for (let i = 0; i < rows; i++) {
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', 30);
+                    text.setAttribute('y', i * cellSize + 50 + cellSize/2);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('dominant-baseline', 'middle');
+                    text.classList.add('plate-labels');
+                    text.textContent = rowLabels[i];
+                    svg.appendChild(text);
+                }
+
+                // Draw column labels
+                for (let j = 0; j < cols; j++) {
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', j * cellSize + 50 + cellSize/2);
+                    text.setAttribute('y', 30);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('dominant-baseline', 'middle');
+                    text.classList.add('plate-labels');
+                    text.textContent = j + 1;
+                    svg.appendChild(text);
+                }
+
+                // Draw wells
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < cols; j++) {
+                        const wellName = `${rowLabels[i]}${j + 1}`;
+                        const wellData = layout.find(w => w.well === wellName);
+                        
+                        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        const cx = j * cellSize + 50 + cellSize/2;
+                        const cy = i * cellSize + 50 + cellSize/2;
+                        const radius = cellSize * 0.35;
+
+                        circle.setAttribute('cx', cx);
+                        circle.setAttribute('cy', cy);
+                        circle.setAttribute('r', radius);
+                        circle.classList.add('well');
+                        circle.setAttribute('fill', wellData ? this.colors[wellData.group] : '#e2e8f0');
+
+                        // Add hover effects
+                        circle.addEventListener('mouseenter', (e) => this.showTooltip(e, wellData, wellName));
+                        circle.addEventListener('mouseleave', () => this.hideTooltip());
+
+                        svg.appendChild(circle);
+
+                        // Add text for experimental wells
+                        if (wellData) {
+                            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                            text.setAttribute('x', cx);
+                            text.setAttribute('y', cy);
+                            text.setAttribute('text-anchor', 'middle');
+                            text.setAttribute('dominant-baseline', 'middle');
+                            text.classList.add('well-text');
+                            text.style.fontSize = `${cellSize * 0.15}px`;
+                            text.textContent = wellData.group.length > 8 ? wellData.group.substring(0, 6) + '...' : wellData.group;
+                            svg.appendChild(text);
+
+                            // Add subtext
+                            const subtext = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                            subtext.setAttribute('x', cx);
+                            subtext.setAttribute('y', cy + radius + 15);
+                            subtext.setAttribute('text-anchor', 'middle');
+                            subtext.classList.add('well-subtext');
+                            subtext.textContent = `${wellData.timepoint} R${wellData.replicate}`;
+                            svg.appendChild(subtext);
+                        }
+                    }
+                }
+
+                container.appendChild(svg);
+            }
+
+            showTooltip(event, wellData, wellName) {
+                const tooltip = document.getElementById('tooltip');
+                
+                if (wellData) {
+                    tooltip.innerHTML = `
+                        <strong>Well:</strong> ${wellName}<br>
+                        <strong>Group:</strong> ${wellData.group}<br>
+                        <strong>Time:</strong> ${wellData.timepoint}<br>
+                        <strong>Replicate:</strong> ${wellData.replicate}
+                    `;
+                } else {
+                    tooltip.innerHTML = `<strong>Well:</strong> ${wellName}<br><em>Empty</em>`;
+                }
+
+                tooltip.style.left = `${event.pageX + 10}px`;
+                tooltip.style.top = `${event.pageY - 10}px`;
+                tooltip.classList.add('show');
+            }
+
+            hideTooltip() {
+                document.getElementById('tooltip').classList.remove('show');
+            }
+
+            updateLegend(groups) {
+                const legend = document.getElementById('legend');
+                legend.innerHTML = '';
+
+                groups.forEach(group => {
+                    const item = document.createElement('div');
+                    item.className = 'legend-item';
+                    item.innerHTML = `
+                        <div class="legend-color" style="background-color: ${this.colors[group]};"></div>
+                        <span>${group}</span>
+                    `;
+                    legend.appendChild(item);
+                });
+            }
+
+            updateSummary() {
+                const groups = this.getTags('group-tags');
+                const timepoints = this.getTags('timepoint-tags');
+                const replicates = parseInt(document.getElementById('replicates').value) || 0;
+                const plateFormat = document.getElementById('plate-format').value;
+                const plateConfig = this.plateConfigs[plateFormat];
+
+                const needed = groups.length * timepoints.length * replicates;
+                const capacity = plateConfig.rows * plateConfig.cols;
+                const utilization = capacity > 0 ? (needed / capacity) * 100 : 0;
+
+                const summaryGrid = document.getElementById('summary-grid');
+                summaryGrid.innerHTML = `
+                    <div class="summary-item">
+                        <span class="summary-value">${needed}</span>
+                        <span class="summary-label">Wells Needed</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-value">${capacity}</span>
+                        <span class="summary-label">Total Wells</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-value">${utilization.toFixed(1)}%</span>
+                        <span class="summary-label">Utilization</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-value">${capacity - needed}</span>
+                        <span class="summary-label">Remaining</span>
+                    </div>
+                `;
+            }
+
+            // Preset Management
+            savePreset() {
+                const presetName = document.getElementById('preset-name').value.trim();
+                if (!presetName) {
+                    this.showError('Please enter a preset name.');
                     return;
                 }
 
-                let c1_converted = c1;
-                if(c1_unit === 'mM' && c2_unit === 'µM') c1_converted *= 1000;
-                if(c1_unit === 'µM' && c2_unit === 'mM') c1_converted /= 1000;
-
-                const v1 = (c2 * v2) / c1_converted;
-                const diluent = v2 - v1;
-                
-                const resultBox = document.getElementById('calc-result');
-                resultBox.style.display = 'block';
-                resultBox.innerHTML = `<h4>Calculation Result:</h4>
-                You need <strong>${v1.toFixed(2)} µL</strong> of stock solution.<br>
-                Add it to <strong>${diluent.toFixed(2)} µL</strong> of diluent.`;
-            }
-            
-            updateSummary(isInitial = false) {
-                const summaryGrid = document.getElementById('summary-grid');
-                summaryGrid.innerHTML = '';
-                
-                const config = this.getCurrentConfig();
-                const capacity = config.plateConfig.rows * config.plateConfig.cols;
-                const needed = isInitial ? 0 : this.currentLayout.length;
-                const utilization = capacity > 0 ? (needed / capacity) * 100 : 0;
-                
-                const summaryData = {
-                    "Total Wells Needed": needed,
-                    "Plate Capacity": capacity,
-                    "Utilization": `${utilization.toFixed(1)}%`,
-                    "Remaining Wells": capacity - needed
+                const preset = {
+                    expName: document.getElementById('exp-name').value,
+                    plateFormat: document.getElementById('plate-format').value,
+                    groups: this.getTags('group-tags'),
+                    timepoints: this.getTags('timepoint-tags'),
+                    replicates: document.getElementById('replicates').value
                 };
 
-                for(const [label, value] of Object.entries(summaryData)) {
-                    const item = document.createElement('div');
-                    item.className = 'summary-item';
-                    item.innerHTML = `<div class="value">${value}</div><div class="label">${label}</div>`;
-                    summaryGrid.appendChild(item);
-                }
+                const presets = JSON.parse(localStorage.getItem('plateMasterPresets') || '{}');
+                presets[presetName] = preset;
+                localStorage.setItem('plateMasterPresets', JSON.stringify(presets));
+
+                this.loadPresets();
+                document.getElementById('preset-name').value = '';
+                this.showSuccess(`Preset "${presetName}" saved successfully!`);
             }
 
-            // --- NEW & IMPROVED EXPORT FUNCTIONS ---
-            exportPNG() {
-                const svgElement = document.querySelector("#plate-visualization-container svg");
-                if (!svgElement) {
-                    alert("Please generate a layout first.");
+            loadPreset() {
+                const presetName = document.getElementById('preset-select').value;
+                if (!presetName) return;
+
+                const presets = JSON.parse(localStorage.getItem('plateMasterPresets') || '{}');
+                const preset = presets[presetName];
+
+                if (!preset) return;
+
+                document.getElementById('exp-name').value = preset.expName || '';
+                document.getElementById('plate-format').value = preset.plateFormat || '96';
+                document.getElementById('replicates').value = preset.replicates || '3';
+
+                // Clear and reload tags
+                this.clearTags('group-tags');
+                this.clearTags('timepoint-tags');
+
+                preset.groups.forEach(group => this.addTag('group-tags', group));
+                preset.timepoints.forEach(timepoint => this.addTag('timepoint-tags', timepoint));
+
+                this.updateSummary();
+                this.drawEmptyPlate();
+                this.showSuccess(`Preset "${presetName}" loaded successfully!`);
+            }
+
+            deletePreset() {
+                const presetName = document.getElementById('preset-select').value;
+                if (!presetName) return;
+
+                if (!confirm(`Delete preset "${presetName}"?`)) return;
+
+                const presets = JSON.parse(localStorage.getItem('plateMasterPresets') || '{}');
+                delete presets[presetName];
+                localStorage.setItem('plateMasterPresets', JSON.stringify(presets));
+
+                this.loadPresets();
+                this.showSuccess(`Preset "${presetName}" deleted successfully!`);
+            }
+
+            loadPresets() {
+                const presets = JSON.parse(localStorage.getItem('plateMasterPresets') || '{}');
+                const select = document.getElementById('preset-select');
+                
+                select.innerHTML = '<option value="">-- Select a preset --</option>';
+                Object.keys(presets).forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    select.appendChild(option);
+                });
+            }
+
+            clearTags(containerId) {
+                const container = document.getElementById(containerId);
+                const tags = container.querySelectorAll('.tag');
+                tags.forEach(tag => tag.remove());
+            }
+
+            // Calculator
+            calculateDilution() {
+                const c1 = parseFloat(document.getElementById('c1').value);
+                const c1Unit = document.getElementById('c1-unit').value;
+                const c2 = parseFloat(document.getElementById('c2').value);
+                const c2Unit = document.getElementById('c2-unit').value;
+                const v2 = parseFloat(document.getElementById('v2').value);
+
+                if (!c1 || !c2 || !v2) {
+                    this.showError('Please fill in all calculator fields.');
                     return;
                 }
 
-                const serializer = new XMLSerializer();
-                let source = serializer.serializeToString(svgElement);
+                // Unit conversion
+                let c1Converted = c1;
+                if (c1Unit === 'mM' && c2Unit === 'µM') c1Converted *= 1000;
+                else if (c1Unit === 'µM' && c2Unit === 'mM') c1Converted /= 1000;
 
-                // Create a canvas element
+                const v1 = (c2 * v2) / c1Converted;
+                const diluentVolume = v2 - v1;
+                const dilutionFactor = c1Converted / c2;
+
+                const resultDiv = document.getElementById('calc-result');
+                resultDiv.innerHTML = `
+                    <h4><i class="fas fa-flask"></i> Dilution Recipe</h4>
+                    <p><strong>Stock volume needed:</strong> ${v1.toFixed(2)} µL</p>
+                    <p><strong>Diluent volume:</strong> ${diluentVolume.toFixed(2)} µL</p>
+                    <p><strong>Dilution factor:</strong> ${dilutionFactor.toFixed(1)}×</p>
+                `;
+                resultDiv.classList.add('show');
+            }
+
+            // Export Functions
+            exportPNG() {
+                if (this.currentLayout.length === 0) {
+                    this.showError('Please generate a layout first.');
+                    return;
+                }
+
+                const svg = document.querySelector('#plate-container svg');
+                if (!svg) return;
+
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                
-                // Create an Image object
                 const img = new Image();
-                const svgBlob = new Blob([source], {type: 'image/svg+xml;charset=utf-8'});
+                
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
                 const url = URL.createObjectURL(svgBlob);
 
                 img.onload = () => {
-                    // Set canvas dimensions with a scaling factor for higher resolution
-                    const scale = 3;
+                    const scale = 3; // High resolution
                     canvas.width = img.width * scale;
                     canvas.height = img.height * scale;
                     
-                    // Fill background
                     ctx.fillStyle = 'white';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                    // Draw the image onto the canvas
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    URL.revokeObjectURL(url);
 
-                    // Create a download link for the PNG
-                    const link = document.createElement('a');
-                    link.download = `${this.getCurrentConfig().expName || 'plate-layout'}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
+                    canvas.toBlob(blob => {
+                        const link = document.createElement('a');
+                        link.download = `${document.getElementById('exp-name').value || 'plate-layout'}.png`;
+                        link.href = URL.createObjectURL(blob);
+                        link.click();
+                        URL.revokeObjectURL(url);
+                    });
                 };
                 img.src = url;
             }
 
-            // ... (SVG and CSV export are mostly the same, but can be slightly simplified)
-             exportSVG() {
-                const svgElement = document.querySelector("#plate-visualization-container svg");
-                if(!svgElement) { alert("Please generate a layout first."); return; }
-                const source = new XMLSerializer().serializeToString(svgElement);
-                const blob = new Blob([source], {type: "image/svg+xml;charset=utf-8"});
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = url;
-                link.download = `${this.getCurrentConfig().expName || 'plate-layout'}.svg`;
+            exportSVG() {
+                if (this.currentLayout.length === 0) {
+                    this.showError('Please generate a layout first.');
+                    return;
+                }
+
+                const svg = document.querySelector('#plate-container svg');
+                if (!svg) return;
+
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const blob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                const link = document.createElement('a');
+                link.download = `${document.getElementById('exp-name').value || 'plate-layout'}.svg`;
+                link.href = URL.createObjectURL(blob);
                 link.click();
-                URL.revokeObjectURL(url);
             }
 
             exportCSV() {
-                if(this.currentLayout.length === 0) { alert("Please generate a layout first."); return; }
-                let csvContent = "data:text/csv;charset=utf-8,Well,Group,Timepoint,Replicate\n";
-                this.currentLayout.forEach(row => {
-                    csvContent += `${row.well},"${row.group}","${row.timepoint}",${row.replicate}\n`;
+                if (this.currentLayout.length === 0) {
+                    this.showError('Please generate a layout first.');
+                    return;
+                }
+
+                let csv = 'Well,Group,Timepoint,Replicate\n';
+                this.currentLayout.forEach(item => {
+                    csv += `${item.well},"${item.group}","${item.timepoint}",${item.replicate}\n`;
                 });
-                const link = document.createElement("a");
-                link.setAttribute("href", encodeURI(csvContent));
-                link.setAttribute("download", `${this.getCurrentConfig().expName || 'plate-layout'}.csv`);
+
+                const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
+                const link = document.createElement('a');
+                link.download = `${document.getElementById('exp-name').value || 'plate-layout'}.csv`;
+                link.href = URL.createObjectURL(blob);
                 link.click();
             }
+
+            // Utility functions
+            showError(message) {
+                alert(`❌ Error: ${message}`);
+            }
+
+            showSuccess(message) {
+                alert(`✅ Success: ${message}`);
+            }
         }
+
         // Initialize the app
-        const app = new PlateMasterWebApp();
+        const app = new PlateMasterApp();
     </script>
 </body>
 </html>
