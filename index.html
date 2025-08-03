@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlateMaster Web - Experimental Design Studio</title>
+    <style>
+        /* --- General Styling --- */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --background-color: #ecf0f1;
+            --widget-bg-color: #ffffff;
+            --text-color: #34495e;
+            --border-color: #bdc3c7;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1, h2, h3 {
+            color: var(--secondary-color);
+            text-align: center;
+        }
+        h1 { font-size: 2.5em; margin-bottom: 5px; }
+        h2 { font-size: 1.2em; margin-top: 0; font-weight: 300; }
+
+        /* --- Main Layout --- */
+        .main-container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 1600px;
+        }
+        .controls-column {
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .visualization-column {
+            flex-grow: 1;
+        }
+
+        /* --- Widgets --- */
+        .widget {
+            background-color: var(--widget-bg-color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-color);
+        }
+        .widget h3 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            text-align: left;
+        }
+
+        /* --- Form Elements --- */
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+        .button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        .button:hover { background-color: #2980b9; }
+        .button.secondary { background-color: var(--secondary-color); }
+        .button.secondary:hover { background-color: #1a252f; }
+        .button.danger { background-color: var(--danger-color); }
+        .button.danger:hover { background-color: #c0392b; }
+
+        /* --- Tag Input for Groups/Timepoints --- */
+        .tag-container {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .tag {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+        }
+        .tag span { cursor: pointer; margin-left: 8px; font-weight: bold; }
+        .tag-input { border: none; flex-grow: 1; outline: none; padding: 5px; }
+
+        /* --- Plate Visualization --- */
+        #plate-visualization { text-align: center; }
+        .plate-svg {
+            border: 2px solid var(--border-color);
+            background-color: #fdfdfd;
+            border-radius: 10px;
+        }
+        .well {
+            stroke: var(--secondary-color);
+            stroke-width: 1;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .well:hover { transform: scale(1.1); stroke-width: 2; }
+        .well-text { font-family: var(--font-family); font-weight: bold; fill: white; pointer-events: none; }
+        .well-subtext { font-family: var(--font-family); fill: var(--secondary-color); pointer-events: none; }
+        .row-label, .col-label { font-family: var(--font-family); font-weight: bold; }
+        #tooltip {
+            position: absolute;
+            background-color: rgba(44, 62, 80, 0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 0.9em;
+            white-space: pre;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>PlateMaster Web</h1>
+        <h2>A Modern Tool for Experimental Design and Visualization</h2>
+    </header>
+
+    <div class="main-container">
+        <!-- Left Column: Controls and Presets -->
+        <div class="controls-column">
+            <div class="widget">
+                <h3><i class="icon-settings"></i>1. Experiment Setup</h3>
+                <label for="exp-name">Experiment Name:</label>
+                <input type="text" id="exp-name" placeholder="e.g., Antibiotic Synergy Test">
+
+                <label for="plate-format">Plate Format:</label>
+                <select id="plate-format">
+                    <option value="96">96-Well Plate</option>
+                    <option value="48">48-Well Plate</option>
+                    <option value="24">24-Well Plate</option>
+                    <option value="12">12-Well Plate</option>
+                    <option value="6">6-Well Plate</option>
+                </select>
+                
+                <label for="group-input">Groups (Press Enter to add):</label>
+                <div class="tag-container" id="group-tags">
+                    <input type="text" id="group-input" class="tag-input" placeholder="e.g., Control, So, Fn...">
+                </div>
+
+                <label for="timepoint-input">Time Points (Press Enter to add):</label>
+                <div class="tag-container" id="timepoint-tags">
+                    <input type="text" id="timepoint-input" class="tag-input" placeholder="e.g., 4h, 24h, 48h...">
+                </div>
+
+                <label for="replicates">Replicates per Condition:</label>
+                <input type="number" id="replicates" value="3" min="1">
+            </div>
+
+            <div class="widget">
+                <h3><i class="icon-presets"></i>2. Custom Presets</h3>
+                <label for="preset-name">Save Current Setup as Preset:</label>
+                <input type="text" id="preset-name" placeholder="e.g., My Standard Assay">
+                <button class="button secondary" onclick="app.savePreset()">Save Preset</button>
+                <hr style="margin: 20px 0;">
+                <label for="preset-select">Load a Saved Preset:</label>
+                <select id="preset-select">
+                    <option value="">-- Select a preset --</option>
+                </select>
+                <button class="button" onclick="app.loadPreset()">Load Selected</button>
+                <button class="button danger" onclick="app.deletePreset()" style="margin-top: 10px;">Delete Selected</button>
+            </div>
+
+            <div class="widget">
+                <h3><i class="icon-actions"></i>3. Generate & Export</h3>
+                <button class="button" onclick="app.generateLayout()">Generate Plate Layout</button>
+                <button class="button secondary" onclick="app.exportCSV()" style="margin-top: 10px;">Export as CSV</button>
+                 <button class="button secondary" onclick="app.exportSVG()" style="margin-top: 10px;">Export as SVG</button>
+            </div>
+        </div>
+
+        <!-- Right Column: Visualization and Legend -->
+        <div class="visualization-column">
+            <div class="widget">
+                <h3 id="plate-title">Plate Layout</h3>
+                <div id="plate-visualization">
+                    <!-- SVG will be dynamically generated here -->
+                </div>
+                <div id="legend" style="margin-top: 20px; padding: 10px; display: flex; flex-wrap: wrap; gap: 15px;"></div>
+            </div>
+             <div class="widget" style="margin-top:20px;">
+                <h3><i class="icon-calculator"></i>Concentration Calculator (C1V1 = C2V2)</h3>
+                <div style="display:flex; gap: 10px;">
+                    <div style="flex:1;">
+                        <label>Stock Conc. (C1)</label>
+                        <input type="number" id="c1" placeholder="e.g., 1000">
+                    </div>
+                    <div style="flex:1;">
+                        <label>Final Conc. (C2)</label>
+                        <input type="number" id="c2" placeholder="e.g., 50">
+                    </div>
+                    <div style="flex:1;">
+                        <label>Final Volume (V2)</label>
+                        <input type="number" id="v2" placeholder="e.g., 200">
+                    </div>
+                     <button class="button" onclick="app.calculateDilution()" style="align-self:end; height: 38px;">Calculate V1</button>
+                </div>
+                <p id="calc-result" style="font-weight:bold; margin-top:15px;"></p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="tooltip"></div>
+
+    <script>
+        class PlateMasterApp {
+            constructor() {
+                this.plateConfigs = {
+                    "96": { rows: 8, cols: 12, rowLabels: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] },
+                    "48": { rows: 6, cols: 8, rowLabels: ['A', 'B', 'C', 'D', 'E', 'F'] },
+                    "24": { rows: 4, cols: 6, rowLabels: ['A', 'B', 'C', 'D'] },
+                    "12": { rows: 3, cols: 4, rowLabels: ['A', 'B', 'C'] },
+                    "6":  { rows: 2, cols: 3, rowLabels: ['A', 'B'] },
+                };
+                this.currentLayout = [];
+                this.colors = {};
+                this.setupEventListeners();
+                this.loadPresetsIntoSelect();
+            }
+
+            setupEventListeners() {
+                document.getElementById('group-input').addEventListener('keypress', e => {
+                    if (e.key === 'Enter') this.addTag('group-tags', e.target.value);
+                });
+                document.getElementById('timepoint-input').addEventListener('keypress', e => {
+                    if (e.key === 'Enter') this.addTag('timepoint-tags', e.target.value);
+                });
+                this.initPlate(); // Initial empty plate
+            }
+
+            addTag(containerId, text) {
+                text = text.trim();
+                if (!text) return;
+                const container = document.getElementById(containerId);
+                const tag = document.createElement('div');
+                tag.className = 'tag';
+                tag.innerHTML = `${text} <span>&times;</span>`;
+                tag.querySelector('span').onclick = () => tag.remove();
+                container.insertBefore(tag, container.lastElementChild);
+                document.getElementById(containerId.replace('-tags', '-input')).value = '';
+            }
+
+            getTags(containerId) {
+                return Array.from(document.getElementById(containerId).querySelectorAll('.tag'))
+                    .map(tag => tag.textContent.slice(0, -2).trim());
+            }
+
+            generateLayout() {
+                const config = this.getCurrentConfig();
+                if (config.groups.length === 0 || config.timepoints.length === 0) {
+                    alert('Please define at least one group and one time point.');
+                    return;
+                }
+
+                const totalNeeded = config.groups.length * config.timepoints.length * config.replicates;
+                if (totalNeeded > config.plateConfig.rows * config.plateConfig.cols) {
+                    alert(`Error: ${totalNeeded} wells are required, but a ${config.plateFormat}-well plate only has ${config.plateConfig.rows * config.plateConfig.cols}.`);
+                    return;
+                }
+                
+                this.generateColors(config.groups);
+                this.currentLayout = [];
+                let i = 0;
+                for (const group of config.groups) {
+                    for (const timepoint of config.timepoints) {
+                        for (let r = 1; r <= config.replicates; r++) {
+                            this.currentLayout.push({ group, timepoint, replicate: r, well: this.getWellName(i, config.plateConfig) });
+                            i++;
+                        }
+                    }
+                }
+                this.drawPlate(config);
+            }
+
+            getCurrentConfig() {
+                const plateFormat = document.getElementById('plate-format').value;
+                return {
+                    expName: document.getElementById('exp-name').value,
+                    plateFormat: plateFormat,
+                    plateConfig: this.plateConfigs[plateFormat],
+                    groups: this.getTags('group-tags'),
+                    timepoints: this.getTags('timepoint-tags'),
+                    replicates: parseInt(document.getElementById('replicates').value)
+                };
+            }
+            
+            getWellName(index, plateConfig) {
+                const row = plateConfig.rowLabels[Math.floor(index / plateConfig.cols)];
+                const col = (index % plateConfig.cols) + 1;
+                return `${row}${col}`;
+            }
+
+            generateColors(groups) {
+                this.colors = {};
+                const hueStep = 360 / groups.length;
+                groups.forEach((group, i) => {
+                    this.colors[group] = `hsl(${i * hueStep}, 70%, 60%)`;
+                });
+            }
+
+            initPlate() {
+                const config = this.getCurrentConfig();
+                this.drawPlate(config, true);
+            }
+
+            drawPlate(config, isEmpty = false) {
+                const { rows, cols, rowLabels } = config.plateConfig;
+                const svgNS = "http://www.w3.org/2000/svg";
+                const viz = document.getElementById('plate-visualization');
+                viz.innerHTML = '';
+                
+                const svgWidth = cols * 50 + 60;
+                const svgHeight = rows * 50 + 60;
+                const svg = document.createElementNS(svgNS, "svg");
+                svg.setAttribute('width', svgWidth);
+                svg.setAttribute('height', svgHeight);
+                svg.classList.add('plate-svg');
+
+                // Draw labels
+                for (let i = 0; i < rows; i++) {
+                    const label = document.createElementNS(svgNS, 'text');
+                    label.setAttribute('x', 20);
+                    label.setAttribute('y', i * 50 + 65);
+                    label.textContent = rowLabels[i];
+                    label.classList.add('row-label');
+                    svg.appendChild(label);
+                }
+                for (let j = 0; j < cols; j++) {
+                    const label = document.createElementNS(svgNS, 'text');
+                    label.setAttribute('x', j * 50 + 65);
+                    label.setAttribute('y', 30);
+                    label.textContent = j + 1;
+                    label.classList.add('col-label');
+                    svg.appendChild(label);
+                }
+
+                // Draw wells
+                let wellIndex = 0;
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < cols; j++) {
+                        const wellData = this.currentLayout.find(w => w.well === `${rowLabels[i]}${j+1}`);
+                        const circle = document.createElementNS(svgNS, 'circle');
+                        const cx = j * 50 + 65;
+                        const cy = i * 50 + 65;
+                        circle.setAttribute('cx', cx);
+                        circle.setAttribute('cy', cy);
+                        circle.setAttribute('r', 20);
+                        circle.classList.add('well');
+                        circle.setAttribute('fill', wellData ? this.colors[wellData.group] : '#EFEFEF');
+                        
+                        circle.onmousemove = e => this.showTooltip(e, wellData);
+                        circle.onmouseout = () => this.hideTooltip();
+                        
+                        svg.appendChild(circle);
+
+                        if (wellData) {
+                            const text = document.createElementNS(svgNS, 'text');
+                            text.setAttribute('x', cx);
+                            text.setAttribute('y', cy + 4);
+                            text.setAttribute('text-anchor', 'middle');
+                            text.classList.add('well-text');
+                            text.textContent = wellData.group.length > 8 ? wellData.group.substring(0,3)+"..." : wellData.group;
+                            svg.appendChild(text);
+
+                             const subtext = document.createElementNS(svgNS, 'text');
+                             subtext.setAttribute('x', cx);
+                             subtext.setAttribute('y', cy + 35);
+                             subtext.setAttribute('text-anchor', 'middle');
+                             subtext.classList.add('well-subtext');
+                             subtext.setAttribute('font-size', '10px');
+                             subtext.textContent = `${wellData.timepoint} R${wellData.replicate}`;
+                             svg.appendChild(subtext);
+                        }
+                        wellIndex++;
+                    }
+                }
+                viz.appendChild(svg);
+                this.drawLegend(config.groups);
+                document.getElementById('plate-title').textContent = config.expName || 'Plate Layout';
+            }
+
+            drawLegend(groups) {
+                const legend = document.getElementById('legend');
+                legend.innerHTML = '';
+                groups.forEach(group => {
+                    const item = document.createElement('div');
+                    item.style.display = 'flex';
+                    item.style.alignItems = 'center';
+                    item.innerHTML = `<div style="width: 20px; height: 20px; border-radius: 50%; background-color: ${this.colors[group]}; margin-right: 8px;"></div><span>${group}</span>`;
+                    legend.appendChild(item);
+                });
+            }
+
+            showTooltip(event, wellData) {
+                const tooltip = document.getElementById('tooltip');
+                if (!wellData) return;
+                tooltip.style.opacity = 1;
+                tooltip.style.left = `${event.pageX + 15}px`;
+                tooltip.style.top = `${event.pageY + 15}px`;
+                tooltip.innerHTML = `<strong>Group:</strong> ${wellData.group}<br><strong>Time:</strong> ${wellData.timepoint}<br><strong>Replicate:</strong> ${wellData.replicate}<br><strong>Well:</strong> ${wellData.well}`;
+            }
+
+            hideTooltip() {
+                document.getElementById('tooltip').style.opacity = 0;
+            }
+
+            // --- Preset Management ---
+            savePreset() {
+                const presetName = document.getElementById('preset-name').value.trim();
+                if (!presetName) {
+                    alert('Please enter a name for the preset.');
+                    return;
+                }
+                const config = this.getCurrentConfig();
+                const presets = JSON.parse(localStorage.getItem('plateMasterPresets') || '{}');
+                presets[presetName] = {
+                    expName: config.expName,
+                    plateFormat: config.plateFormat,
+                    groups: config.groups,
+                    timepoints: config.timepoints,
+                    replicates: config.replicates,
+                };
+                localStorage.setItem('plateMasterPresets', JSON.stringify(presets));
+                this.loadPresetsIntoSelect();
+                alert(`Preset "${presetName}" saved!`);
+                document.getElementById('preset-name').value = '';
+            }
+
+            loadPresetsIntoSelect() {
+                const presets = JSON.parse(localStorage.getItem('plateMasterPresets') || '{}');
+                const select = document.getElementById('preset-select');
+                select.innerHTML = '<option value="">-- Select a preset --</option>';
+                Object.keys(presets).forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    select.appendChild(option);
+                });
+            }
+
+            loadPreset() {
+                const presetName = document.getElementById('preset-select').value;
+                if (!presetName) return;
+                const presets = JSON.parse(localStorage.getItem('plateMasterPresets') || '{}');
+                const preset = presets[presetName];
+
+                document.getElementById('exp-name').value = preset.expName;
+                document.getElementById('plate-format').value = preset.plateFormat;
+                document.getElementById('replicates').value = preset.replicates;
+                
+                // Clear and add tags
+                document.getElementById('group-tags').innerHTML = '<input type="text" id="group-input" class="tag-input" placeholder="e.g., Control, So, Fn...">';
+                preset.groups.forEach(g => this.addTag('group-tags', g));
+                document.getElementById('group-input').addEventListener('keypress', e => {
+                    if (e.key === 'Enter') this.addTag('group-tags', e.target.value);
+                });
+
+                document.getElementById('timepoint-tags').innerHTML = '<input type="text" id="timepoint-input" class="tag-input" placeholder="e.g., 4h, 24h, 48h...">';
+                preset.timepoints.forEach(t => this.addTag('timepoint-tags', t));
+                document.getElementById('timepoint-input').addEventListener('keypress', e => {
+                    if (e.key === 'Enter') this.addTag('timepoint-tags', e.target.value);
+                });
+
+                alert(`Preset "${presetName}" loaded.`);
+            }
+            
+            deletePreset() {
+                const presetName = document.getElementById('preset-select').value;
+                if (!presetName) {
+                     alert('Please select a preset to delete.');
+                    return;
+                }
+                if (!confirm(`Are you sure you want to delete the preset "${presetName}"?`)) return;
+
+                const presets = JSON.parse(localStorage.getItem('plateMasterPresets') || '{}');
+                delete presets[presetName];
+                localStorage.setItem('plateMasterPresets', JSON.stringify(presets));
+                this.loadPresetsIntoSelect();
+                alert(`Preset "${presetName}" deleted.`);
+            }
+            
+            // --- Export & Calculation ---
+            exportCSV() {
+                if(this.currentLayout.length === 0) {
+                    alert("Please generate a layout first.");
+                    return;
+                }
+                let csvContent = "data:text/csv;charset=utf-8,Well,Group,Timepoint,Replicate\n";
+                this.currentLayout.forEach(row => {
+                    csvContent += `${row.well},${row.group},${row.timepoint},${row.replicate}\n`;
+                });
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "plate_layout.csv");
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            }
+
+            exportSVG() {
+                const svgElement = document.querySelector("#plate-visualization svg");
+                if(!svgElement) {
+                     alert("Please generate a layout first.");
+                     return;
+                }
+                const serializer = new XMLSerializer();
+                let source = serializer.serializeToString(svgElement);
+                // Add styles to SVG
+                const style = `<style>.well{stroke:#2c3e50;stroke-width:1}.well-text{font-family:Segoe UI,sans-serif;font-weight:700;fill:#fff}.well-subtext{font-family:Segoe UI,sans-serif;fill:#2c3e50}.row-label,.col-label{font-family:Segoe UI,sans-serif;font-weight:700}</style>`;
+                source = source.replace('>', `>${style}`);
+                
+                const blob = new Blob([source], {type: "image/svg+xml;charset=utf-8"});
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = "plate_layout.svg";
+                link.click();
+                URL.revokeObjectURL(url);
+            }
+
+            calculateDilution() {
+                const c1 = parseFloat(document.getElementById('c1').value);
+                const c2 = parseFloat(document.getElementById('c2').value);
+                const v2 = parseFloat(document.getElementById('v2').value);
+                if (isNaN(c1) || isNaN(c2) || isNaN(v2) || c1 === 0) {
+                     document.getElementById('calc-result').textContent = "Please enter valid numbers.";
+                     return;
+                }
+                const v1 = (c2 * v2) / c1;
+                document.getElementById('calc-result').textContent = `You need ${v1.toFixed(2)} µL of stock solution.`;
+            }
+        }
+
+        const app = new PlateMasterApp();
+    </script>
+</body>
+</html>
