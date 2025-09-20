@@ -3,1227 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PlateMaster Pro - Experimental Design Studio</title>
-    <style>
-        /* --- Import Google Fonts & Icons --- */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
-        
-        /* --- CSS Variables --- */
-        :root {
-            --primary-color: #6366f1;
-            --primary-light: #818cf8;
-            --primary-dark: #4f46e5;
-            --secondary-color: #64748b;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --background: #f8fafc;
-            --surface: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --border: #e2e8f0;
-            --border-light: #f1f5f9;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-            --radius-sm: 6px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* --- Base Styles --- */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--background);
-            color: var(--text-primary);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* --- Layout --- */
-        .app-container {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
-            color: white;
-            padding: 2rem 1.5rem;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='7' cy='7' r='7'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
-            animation: drift 20s linear infinite;
-        }
-
-        @keyframes drift {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(60px); }
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            font-weight: 300;
-            position: relative;
-            z-index: 1;
-        }
-
-        .main-content {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 2rem;
-            padding: 2rem 1.5rem;
-            max-width: 1600px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        /* --- Cards --- */
-        .card {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border);
-            transition: var(--transition);
-            overflow: hidden;
-        }
-
-        .card:hover {
-            box-shadow: var(--shadow-md);
-            transform: translateY(-1px);
-        }
-
-        .card-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border-light);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .card-header h3 {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .card-header i {
-            color: var(--primary-color);
-            font-size: 1.25rem;
-        }
-
-        .card-body {
-            padding: 1.5rem;
-        }
-
-        /* --- Form Elements --- */
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 0.875rem;
-            transition: var(--transition);
-            background: var(--surface);
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .form-select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem;
-        }
-
-        /* --- Buttons --- */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
-            user-select: none;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-primary {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn-secondary {
-            background: var(--secondary-color);
-            color: white;
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            background: #475569;
-        }
-
-        .btn-success {
-            background: var(--success-color);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--danger-color);
-            color: white;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-        }
-
-        .btn-outline:hover {
-            background: var(--border-light);
-        }
-
-        .btn-full {
-            width: 100%;
-        }
-
-        /* --- Tag System --- */
-        .tag-container {
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 0.5rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            min-height: 2.5rem;
-            align-items: center;
-            background: var(--surface);
-            transition: var(--transition);
-        }
-
-        .tag-container:focus-within {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.25rem 0.75rem;
-            background: var(--primary-color);
-            color: white;
-            border-radius: 1rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-            animation: tagAppear 0.2s ease-out;
-        }
-
-        @keyframes tagAppear {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .tag-remove {
-            cursor: pointer;
-            padding: 0.125rem;
-            border-radius: 50%;
-            transition: var(--transition);
-        }
-
-        .tag-remove:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .tag-input {
-            border: none;
-            outline: none;
-            flex: 1;
-            min-width: 120px;
-            padding: 0.25rem;
-            font-size: 0.875rem;
-            background: transparent;
-        }
-
-        /* --- Plate Visualization --- */
-        .plate-container {
-            position: relative;
-            text-align: center;
-        }
-
-        .plate-svg {
-            background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border);
-            width: 100%;
-            height: auto;
-            max-width: 800px;
-        }
-
-        .well {
-            stroke: var(--text-secondary);
-            stroke-width: 0.5;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .well:hover {
-            stroke-width: 2;
-            filter: brightness(1.1);
-            transform: scale(1.05);
-        }
-
-        .well-text {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            fill: white;
-            pointer-events: none;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-        }
-
-        .well-subtext {
-            font-family: 'Inter', sans-serif;
-            font-size: 10px;
-            fill: var(--text-secondary);
-            pointer-events: none;
-        }
-
-        .plate-labels {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            fill: var(--text-secondary);
-        }
-
-        /* --- Tooltip --- */
-        .tooltip {
-            position: absolute;
-            background: rgba(15, 23, 42, 0.95);
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius-sm);
-            font-size: 0.875rem;
-            pointer-events: none;
-            opacity: 0;
-            transform: translateY(8px);
-            transition: var(--transition);
-            box-shadow: var(--shadow-lg);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-        }
-
-        .tooltip.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* --- Legend --- */
-        .legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border-light);
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .legend-color {
-            width: 1rem;
-            height: 1rem;
-            border-radius: 50%;
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* --- Summary Grid --- */
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .summary-item {
-            text-align: center;
-            padding: 1rem;
-            background: var(--border-light);
-            border-radius: var(--radius-sm);
-            transition: var(--transition);
-        }
-
-        .summary-item:hover {
-            background: var(--border);
-        }
-
-        .summary-value {
-            display: block;
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        .summary-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        /* --- Calculator --- */
-        .calc-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .calc-result {
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            border: 1px solid #93c5fd;
-            color: #1e40af;
-            padding: 1rem;
-            border-radius: var(--radius-sm);
-            margin-top: 1rem;
-            display: none;
-        }
-
-        .calc-result.show {
-            display: block;
-            animation: slideDown 0.3s ease-out;
-        }
-
-        @keyframes slideDown {
-            0% { opacity: 0; transform: translateY(-8px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- Loading & States --- */
-        .loading {
-            display: inline-block;
-            width: 1rem;
-            height: 1rem;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* --- Responsive --- */
-        @media (max-width: 1024px) {
-            .main-content {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .header {
-                padding: 1.5rem 1rem;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .main-content {
-                padding: 1.5rem 1rem;
-            }
-        }
-    </style>
+    <title>WellPlate Pal - Advanced Experiment Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="app-container">
-        <!-- Header -->
-        <div class="header">
-            <h1><i class="fas fa-flask"></i> PlateMaster Pro</h1>
-            <p>Advanced experimental design for modern laboratories</p>
-        </div>
+<body class="bg-slate-50 text-slate-800">
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Left Column: Controls -->
-            <div class="controls-column">
-                <!-- Experiment Setup -->
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-cog"></i>
-                        <h3>Experiment Setup</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label class="form-label" for="exp-name">
-                                <i class="fas fa-tag"></i> Experiment Name
-                            </label>
-                            <input type="text" id="exp-name" class="form-input" 
-                                   placeholder="e.g., Antibiotic Synergy Test">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label" for="plate-format">
-                                <i class="fas fa-th"></i> Plate Format
-                            </label>
-                            <select id="plate-format" class="form-input form-select">
-                                <option value="96">96-Well Plate</option>
-                                <option value="48">48-Well Plate</option>
-                                <option value="24">24-Well Plate</option>
-                                <option value="12">12-Well Plate</option>
-                                <option value="6">6-Well Plate</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-layer-group"></i> Groups
-                            </label>
-                            <div class="tag-container" id="group-tags">
-                                <input type="text" id="group-input" class="tag-input" 
-                                       placeholder="Type group name and press Enter">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-clock"></i> Time Points
-                            </label>
-                            <div class="tag-container" id="timepoint-tags">
-                                <input type="text" id="timepoint-input" class="tag-input" 
-                                       placeholder="e.g., 4h, 24h, 48h">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label" for="replicates">
-                                <i class="fas fa-copy"></i> Replicates per Condition
-                            </label>
-                            <input type="number" id="replicates" class="form-input" 
-                                   value="3" min="1" max="12">
-                        </div>
-
-                        <button class="btn btn-primary btn-full" onclick="app.generateLayout()">
-                            <i class="fas fa-magic"></i> Generate Layout
-                        </button>
-                    </div>
+    <div id="app-container" class="min-h-screen flex flex-col">
+        <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-40 border-b border-slate-200">
+            <div class="w-full max-w-screen-2xl mx-auto px-4 md:px-6 flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <svg class="h-8 w-8 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    <h1 class="text-xl font-bold text-slate-800">WellPlate Pal</h1>
                 </div>
+                <nav class="flex items-center border border-slate-200 rounded-lg p-1 space-x-1 bg-slate-100">
+                    <button onclick="app.switchTab('design')" data-tab-id="design" class="main-tab active text-sm font-semibold px-3 py-1 rounded-md transition-colors">Design</button>
+                    <button onclick="app.switchTab('calculators')" data-tab-id="calculators" class="main-tab text-sm font-semibold px-3 py-1 rounded-md transition-colors">Calculators</button>
+                    <button onclick="app.switchTab('data-input')" data-tab-id="data-input" class="main-tab text-sm font-semibold px-3 py-1 rounded-md transition-colors">Data Input</button>
+                    <button onclick="app.switchTab('analysis')" data-tab-id="analysis" class="main-tab text-sm font-semibold px-3 py-1 rounded-md transition-colors">Analysis</button>
+                    <button onclick="app.switchTab('advanced-analysis')" data-tab-id="advanced-analysis" class="main-tab text-sm font-semibold px-3 py-1 rounded-md transition-colors">Advanced Analysis</button>
+                    <button onclick="app.switchTab('export')" data-tab-id="export" class="main-tab text-sm font-semibold px-3 py-1 rounded-md transition-colors">Export & Notes</button>
+                </nav>
+            </div>
+        </header>
 
-                <!-- Presets -->
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-bookmark"></i>
-                        <h3>Quick Presets</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label class="form-label" for="preset-name">Save Current Setup</label>
-                            <input type="text" id="preset-name" class="form-input" 
-                                   placeholder="Enter preset name">
-                        </div>
-                        <button class="btn btn-secondary btn-full" onclick="app.savePreset()">
-                            <i class="fas fa-save"></i> Save Preset
-                        </button>
-
-                        <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border-light);">
-
-                        <div class="form-group">
-                            <label class="form-label" for="preset-select">Load Saved Preset</label>
-                            <select id="preset-select" class="form-input form-select">
-                                <option value="">-- Select a preset --</option>
-                            </select>
-                        </div>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn btn-outline" onclick="app.loadPreset()" style="flex: 1;">
-                                <i class="fas fa-upload"></i> Load
-                            </button>
-                            <button class="btn btn-danger" onclick="app.deletePreset()" style="flex: 1;">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
+        <main class="flex-1 w-full max-w-screen-2xl mx-auto p-4 md:p-6">
+            <!-- DESIGN SECTION -->
+            <section id="design" class="app-section active grid-cols-1 xl:grid-cols-4 gap-6">
+                <div class="xl:col-span-1 flex flex-col gap-6">
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Experiment Setup</h3>
+                        <div class="space-y-4">
+                            <div><label for="exp-name" class="block text-sm font-medium text-slate-600 mb-1">Experiment Name</label><input type="text" id="exp-name" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500" placeholder="e.g., Cytotoxicity Assay"></div>
+                            <div><label for="plate-format" class="block text-sm font-medium text-slate-600 mb-1">Plate Format</label><select id="plate-format" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"><option value="96">96-Well</option><option value="48">48-Well</option><option value="24">24-Well</option><option value="12">12-Well</option><option value="6">6-Well</option></select></div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Calculator -->
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-calculator"></i>
-                        <h3>Dilution Calculator</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="calc-grid">
-                            <div class="form-group">
-                                <label class="form-label" for="c1">Stock Conc. (C1)</label>
-                                <input type="number" id="c1" class="form-input" placeholder="1000">
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Group Management</h3>
+                        <div class="space-y-2">
+                             <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Add Group</label>
+                                <div id="group-tags" class="p-2 border border-slate-300 rounded-md flex flex-wrap gap-2 items-center bg-white min-h-[40px]"><input type="text" id="group-input" class="flex-grow bg-transparent border-none focus:ring-0 text-sm" placeholder="Type name & press Enter..."></div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label" for="c1-unit">Unit</label>
-                                <select id="c1-unit" class="form-input form-select">
-                                    <option value="mM">mM</option>
-                                    <option value="µM">µM</option>
-                                    <option value="mg/mL">mg/mL</option>
-                                    <option value="µg/mL">µg/mL</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="c2">Final Conc. (C2)</label>
-                                <input type="number" id="c2" class="form-input" placeholder="50">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="c2-unit">Unit</label>
-                                <select id="c2-unit" class="form-input form-select">
-                                    <option value="µM">µM</option>
-                                    <option value="mM">mM</option>
-                                    <option value="mg/mL">mg/mL</option>
-                                    <option value="µg/mL">µg/mL</option>
+                            <div>
+                                <label for="group-type-select" class="block text-sm font-medium text-slate-600 mb-1">Set Selected Group Type</label>
+                                <select id="group-type-select" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                                    <option value="Normal">Normal</option>
+                                    <option value="Dose-Response">Dose-Response Series</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label" for="v2">Final Volume (µL)</label>
-                            <input type="number" id="v2" class="form-input" placeholder="200">
+                    </div>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Automated Layout</h3>
+                        <div class="space-y-4">
+                            <div><label for="replicates" class="block text-sm font-medium text-slate-600 mb-1">Replicates per Group</label><input type="number" id="replicates" value="3" min="1" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"></div>
+                            <div><label for="layout-direction" class="block text-sm font-medium text-slate-600 mb-1">Fill Direction</label><select id="layout-direction" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"><option value="by-row">By Row</option><option value="by-column">By Column</option></select></div>
+                            <div class="flex gap-2"><button id="generate-layout-btn" class="flex-1 w-full bg-teal-600 text-white font-semibold py-2 px-3 rounded-lg shadow-sm hover:bg-teal-700 transition" title="Fill plate automatically based on groups and replicates">Generate</button><button id="randomize-btn" class="flex-1 w-full bg-slate-600 text-white font-semibold py-2 px-3 rounded-lg shadow-sm hover:bg-slate-700 transition" title="Randomize well positions to prevent plate effects">Randomize</button></div>
                         </div>
-                        <button class="btn btn-success btn-full" onclick="app.calculateDilution()">
-                            <i class="fas fa-equals"></i> Calculate
-                        </button>
-                        <div id="calc-result" class="calc-result"></div>
                     </div>
                 </div>
-            </div>
+                <div class="xl:col-span-3 bg-white p-5 rounded-lg shadow-sm border border-slate-200 flex flex-col">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
+                        <h3 id="plate-title-design" class="text-lg font-semibold text-slate-800">Plate Layout</h3>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <div id="active-group-indicator" class="hidden items-center gap-2 text-sm"><span class="font-medium">Active Group:</span><span id="active-group-label" class="font-bold p-1 px-3 rounded-full text-white"></span></div>
+                            <div class="flex items-center gap-2 border border-slate-300 rounded-lg p-1 bg-slate-50">
+                                <button id="paint-mode-btn" class="px-3 py-1 text-sm rounded-md flex items-center gap-2 transition" title="Paint Mode"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg></button>
+                                <button id="erase-mode-btn" class="px-3 py-1 text-sm rounded-md flex items-center gap-2 transition" title="Erase Mode"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg></button>
+                            </div>
+                            <button onclick="app.clearLayout()" class="bg-slate-200 text-slate-700 text-sm font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition" title="Clear all wells on the plate">Clear Plate</button>
+                        </div>
+                    </div>
+                    <div id="plate-container" class="w-full flex-1 min-h-[300px] flex items-center justify-center rounded-lg bg-slate-50 border-2 border-dashed border-slate-200"></div>
+                    <div id="legend" class="mt-4 flex flex-wrap gap-x-4 gap-y-2"></div>
+                </div>
+            </section>
 
-            <!-- Right Column: Visualization -->
-            <div class="visualization-column">
-                <!-- Plate Display -->
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-eye"></i>
-                        <h3 id="plate-title">Plate Visualization</h3>
+            <!-- CALCULATORS SECTION -->
+            <section id="calculators" class="app-section grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></section>
+            
+            <!-- DATA INPUT SECTION -->
+            <section id="data-input" class="app-section grid-cols-1 xl:grid-cols-4 gap-6">
+                <div class="xl:col-span-1 flex flex-col gap-6">
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Paste Data</h3>
+                        <p class="text-sm text-slate-500 mb-2">Paste data from a spreadsheet (TSV or CSV). It should match the plate dimensions.</p>
+                        <textarea id="paste-data-input" rows="8" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 font-mono" placeholder="A1,A2,A3...\nB1,B2,B3..."></textarea>
+                        <button onclick="app.parsePastedData()" class="mt-3 w-full bg-teal-600 text-white font-semibold py-2 px-3 rounded-lg shadow-sm hover:bg-teal-700 transition">Parse Data</button>
                     </div>
-                    <div class="card-body">
-                        <div class="plate-container" id="plate-container">
-                            <!-- SVG will be inserted here -->
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Selected Well</h3>
+                        <p class="text-sm text-slate-500 mb-2">Click a well on the grid to enter its value manually.</p>
+                        <div class="flex items-center gap-3">
+                            <span id="selected-well-label" class="text-2xl font-bold text-slate-800 bg-slate-100 w-16 h-12 flex items-center justify-center rounded-md">--</span>
+                            <input type="number" id="selected-well-input" class="block w-full text-lg rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500" placeholder="Value...">
                         </div>
-                        <div class="legend" id="legend"></div>
                     </div>
                 </div>
+                 <div class="xl:col-span-3 bg-white p-5 rounded-lg shadow-sm border border-slate-200 flex flex-col">
+                     <h3 class="text-lg font-semibold text-slate-800 mb-4">Raw Data Grid</h3>
+                     <div id="data-grid-container" class="w-full flex-1 min-h-[300px] flex items-center justify-center rounded-lg bg-slate-50"></div>
+                </div>
+            </section>
 
-                <!-- Summary & Export -->
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-chart-bar"></i>
-                        <h3>Summary & Export</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="summary-grid" id="summary-grid"></div>
-                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                            <button class="btn btn-outline" onclick="app.exportPNG()" style="flex: 1;">
-                                <i class="fas fa-image"></i> PNG
-                            </button>
-                            <button class="btn btn-outline" onclick="app.exportSVG()" style="flex: 1;">
-                                <i class="fas fa-vector-square"></i> SVG
-                            </button>
-                            <button class="btn btn-outline" onclick="app.exportCSV()" style="flex: 1;">
-                                <i class="fas fa-file-csv"></i> CSV
-                            </button>
+            <!-- ANALYSIS SECTION -->
+            <section id="analysis" class="app-section grid-cols-1 xl:grid-cols-4 gap-6">
+                 <div class="xl:col-span-1 flex flex-col gap-6">
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Normalization Controls</h3>
+                        <p class="text-sm text-slate-500 mb-4">Select groups to use as controls for data normalization (e.g., % activity/inhibition).</p>
+                        <div class="space-y-3">
+                            <div><label for="blank-control-select" class="block text-sm font-medium text-slate-600 mb-1">Blank / Background Control</label><select id="blank-control-select" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"><option value="">None</option></select></div>
+                            <div><label for="positive-control-select" class="block text-sm font-medium text-slate-600 mb-1">Positive / 100% Control</label><select id="positive-control-select" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"><option value="">None</option></select></div>
                         </div>
                     </div>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Analysis Results</h3>
+                        <div id="analysis-results-table" class="text-sm"></div>
+                    </div>
+                 </div>
+                 <div class="xl:col-span-3 bg-white p-5 rounded-lg shadow-sm border border-slate-200 flex flex-col">
+                     <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-slate-800">Data Heatmap</h3>
+                        <div class="flex items-center gap-2 border border-slate-300 rounded-lg p-1 bg-slate-50">
+                            <button id="heatmap-raw-btn" class="px-3 py-1 text-sm rounded-md" title="Show raw data values">Raw</button>
+                            <button id="heatmap-norm-btn" class="px-3 py-1 text-sm rounded-md" title="Show normalized data relative to controls">Normalized</button>
+                        </div>
+                     </div>
+                     <div id="heatmap-container" class="w-full flex-1 min-h-[300px] flex items-center justify-center rounded-lg bg-slate-50"></div>
                 </div>
-            </div>
-        </div>
+            </section>
+            
+             <!-- ADVANCED ANALYSIS SECTION -->
+            <section id="advanced-analysis" class="app-section grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                    <h3 class="text-lg font-semibold mb-4 text-slate-800">Assay Quality (Z'-Factor)</h3>
+                    <div id="z-factor-container"></div>
+                </div>
+                 <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                    <h3 class="text-lg font-semibold mb-4 text-slate-800">Dose-Response Curve (IC50/EC50)</h3>
+                    <div id="dose-response-container"></div>
+                </div>
+            </section>
+
+            <!-- EXPORT & NOTES SECTION -->
+            <section id="export" class="app-section grid-cols-1 md:grid-cols-2 gap-6">
+                 <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                    <h3 class="text-lg font-semibold mb-4 text-slate-800">Export Files</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="app.export('layout-png')" class="bg-slate-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-slate-800 transition" title="Export plate layout as a PNG image">Layout PNG</button>
+                        <button onclick="app.export('layout-svg')" class="bg-slate-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-slate-800 transition" title="Export plate layout as a scalable SVG image">Layout SVG</button>
+                        <button onclick="app.export('layout-csv')" class="bg-slate-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-slate-800 transition" title="Export plate layout as a CSV file">Layout CSV</button>
+                        <button onclick="app.export('results-csv')" class="bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-700 transition" title="Export analysis results (averages, stdev) as a CSV file">Results CSV</button>
+                    </div>
+                    <h3 class="text-lg font-semibold my-4 text-slate-800">Save/Load Session</h3>
+                     <div class="space-y-3">
+                        <div class="flex gap-2"><input type="text" id="preset-name" class="block w-full text-sm rounded-md border-slate-300" placeholder="Session name..."><button onclick="app.saveSession()" class="bg-cyan-600 text-white font-semibold py-2 px-3 rounded-lg hover:bg-cyan-700 transition" title="Save current experiment setup to browser storage">Save</button></div>
+                        <div class="flex gap-2"><select id="preset-select" class="block w-full text-sm rounded-md border-slate-300"><option value="">-- Load a session --</option></select><button onclick="app.loadSession()" class="bg-slate-200 text-slate-700 font-semibold py-2 px-3 rounded-lg hover:bg-slate-300 transition" title="Load a saved session">Load</button><button onclick="app.deleteSession()" class="bg-red-100 text-red-700 font-semibold py-2 px-3 rounded-lg hover:bg-red-200 transition" title="Delete selected session">Del</button></div>
+                        <div class="flex gap-2 pt-2"><label for="import-json" class="flex-1 bg-slate-200 text-center text-slate-700 font-semibold py-2 px-3 rounded-lg hover:bg-slate-300 transition cursor-pointer" title="Import a previously exported JSON session file">Import JSON File</label><input type="file" id="import-json" class="hidden" accept=".json"></div>
+                     </div>
+                 </div>
+                 <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                    <h3 class="text-lg font-semibold mb-4 text-slate-800">Experiment Notes</h3>
+                    <textarea id="exp-notes" rows="12" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500" placeholder="e.g., Reagent lot numbers, protocol details, observations..."></textarea>
+                 </div>
+            </section>
+        </main>
     </div>
 
-    <div class="tooltip" id="tooltip"></div>
-
-    <script>
-        class PlateMasterApp {
-            constructor() {
-                this.plateConfigs = {
-                    "96": { rows: 8, cols: 12, rowLabels: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] },
-                    "48": { rows: 6, cols: 8, rowLabels: ['A', 'B', 'C', 'D', 'E', 'F'] },
-                    "24": { rows: 4, cols: 6, rowLabels: ['A', 'B', 'C', 'D'] },
-                    "12": { rows: 3, cols: 4, rowLabels: ['A', 'B', 'C'] },
-                    "6":  { rows: 2, cols: 3, rowLabels: ['A', 'B'] },
-                };
-                this.currentLayout = [];
-                this.colors = {};
-                this.init();
-            }
-
-            init() {
-                this.setupEventListeners();
-                this.loadPresets();
-                this.updateSummary();
-                this.drawEmptyPlate();
-            }
-
-            setupEventListeners() {
-                // Tag inputs
-                document.getElementById('group-input').addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        this.addTag('group-tags', e.target.value);
-                    }
-                });
-
-                document.getElementById('timepoint-input').addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        this.addTag('timepoint-tags', e.target.value);
-                    }
-                });
-
-                // Plate format change
-                document.getElementById('plate-format').addEventListener('change', () => {
-                    this.updateSummary();
-                    this.drawEmptyPlate();
-                });
-
-                // Replicates change
-                document.getElementById('replicates').addEventListener('input', () => {
-                    this.updateSummary();
-                });
-            }
-
-            addTag(containerId, text) {
-                text = text.trim();
-                if (!text) return;
-
-                const container = document.getElementById(containerId);
-                const existingTags = this.getTags(containerId);
-                
-                if (existingTags.includes(text)) return;
-
-                const tag = document.createElement('div');
-                tag.className = 'tag';
-                tag.innerHTML = `
-                    <span>${text}</span>
-                    <span class="tag-remove" onclick="this.parentElement.remove(); app.updateSummary();">
-                        <i class="fas fa-times"></i>
-                    </span>
-                `;
-                
-                const input = container.querySelector('.tag-input');
-                container.insertBefore(tag, input);
-                input.value = '';
-                
-                this.updateSummary();
-            }
-
-            getTags(containerId) {
-                const container = document.getElementById(containerId);
-                const tags = container.querySelectorAll('.tag span:first-child');
-                return Array.from(tags).map(tag => tag.textContent);
-            }
-
-            generateLayout() {
-                const groups = this.getTags('group-tags');
-                const timepoints = this.getTags('timepoint-tags');
-                const replicates = parseInt(document.getElementById('replicates').value);
-                const plateFormat = document.getElementById('plate-format').value;
-                const plateConfig = this.plateConfigs[plateFormat];
-
-                if (groups.length === 0) {
-                    this.showError('Please add at least one group.');
-                    return;
-                }
-
-                if (timepoints.length === 0) {
-                    this.showError('Please add at least one time point.');
-                    return;
-                }
-
-                const totalNeeded = groups.length * timepoints.length * replicates;
-                const capacity = plateConfig.rows * plateConfig.cols;
-
-                if (totalNeeded > capacity) {
-                    this.showError(`Design requires ${totalNeeded} wells but only ${capacity} available.`);
-                    return;
-                }
-
-                this.generateColors(groups);
-                this.currentLayout = [];
-                
-                let wellIndex = 0;
-                for (const group of groups) {
-                    for (const timepoint of timepoints) {
-                        for (let r = 1; r <= replicates; r++) {
-                            this.currentLayout.push({
-                                group,
-                                timepoint,
-                                replicate: r,
-                                well: this.getWellName(wellIndex, plateConfig)
-                            });
-                            wellIndex++;
-                        }
-                    }
-                }
-
-                this.drawPlate();
-                this.updateSummary();
-                this.updateLegend(groups);
-                
-                document.getElementById('plate-title').innerHTML = `
-                    <i class="fas fa-eye"></i>
-                    ${document.getElementById('exp-name').value || 'Untitled Experiment'}
-                `;
-            }
-
-            generateColors(groups) {
-                const colors = [
-                    '#6366f1', '#8b5cf6', '#06b6d4', '#10b981', 
-                    '#f59e0b', '#ef4444', '#ec4899', '#84cc16'
-                ];
-                
-                this.colors = {};
-                groups.forEach((group, i) => {
-                    this.colors[group] = colors[i % colors.length];
-                });
-            }
-
-            getWellName(index, plateConfig) {
-                const row = plateConfig.rowLabels[Math.floor(index / plateConfig.cols)];
-                const col = (index % plateConfig.cols) + 1;
-                return `${row}${col}`;
-            }
-
-            drawEmptyPlate() {
-                const plateFormat = document.getElementById('plate-format').value;
-                const plateConfig = this.plateConfigs[plateFormat];
-                this.drawPlateStructure(plateConfig, []);
-            }
-
-            drawPlate() {
-                const plateFormat = document.getElementById('plate-format').value;
-                const plateConfig = this.plateConfigs[plateFormat];
-                this.drawPlateStructure(plateConfig, this.currentLayout);
-            }
-
-            drawPlateStructure(plateConfig, layout) {
-                const { rows, cols, rowLabels } = plateConfig;
-                const container = document.getElementById('plate-container');
-                container.innerHTML = '';
-
-                const cellSize = Math.min(60, 800 / cols);
-                const svgWidth = cols * cellSize + 80;
-                const svgHeight = rows * cellSize + 80;
-
-                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                svg.setAttribute('viewBox', `0 0 ${svgWidth} ${svgHeight}`);
-                svg.classList.add('plate-svg');
-
-                // Draw row labels
-                for (let i = 0; i < rows; i++) {
-                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                    text.setAttribute('x', 30);
-                    text.setAttribute('y', i * cellSize + 50 + cellSize/2);
-                    text.setAttribute('text-anchor', 'middle');
-                    text.setAttribute('dominant-baseline', 'middle');
-                    text.classList.add('plate-labels');
-                    text.textContent = rowLabels[i];
-                    svg.appendChild(text);
-                }
-
-                // Draw column labels
-                for (let j = 0; j < cols; j++) {
-                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                    text.setAttribute('x', j * cellSize + 50 + cellSize/2);
-                    text.setAttribute('y', 30);
-                    text.setAttribute('text-anchor', 'middle');
-                    text.setAttribute('dominant-baseline', 'middle');
-                    text.classList.add('plate-labels');
-                    text.textContent = j + 1;
-                    svg.appendChild(text);
-                }
-
-                // Draw wells
-                for (let i = 0; i < rows; i++) {
-                    for (let j = 0; j < cols; j++) {
-                        const wellName = `${rowLabels[i]}${j + 1}`;
-                        const wellData = layout.find(w => w.well === wellName);
-                        
-                        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                        const cx = j * cellSize + 50 + cellSize/2;
-                        const cy = i * cellSize + 50 + cellSize/2;
-                        const radius = cellSize * 0.35;
-
-                        circle.setAttribute('cx', cx);
-                        circle.setAttribute('cy', cy);
-                        circle.setAttribute('r', radius);
-                        circle.classList.add('well');
-                        circle.setAttribute('fill', wellData ? this.colors[wellData.group] : '#e2e8f0');
-
-                        // Add hover effects
-                        circle.addEventListener('mouseenter', (e) => this.showTooltip(e, wellData, wellName));
-                        circle.addEventListener('mouseleave', () => this.hideTooltip());
-
-                        svg.appendChild(circle);
-
-                        // Add text for experimental wells
-                        if (wellData) {
-                            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                            text.setAttribute('x', cx);
-                            text.setAttribute('y', cy);
-                            text.setAttribute('text-anchor', 'middle');
-                            text.setAttribute('dominant-baseline', 'middle');
-                            text.classList.add('well-text');
-                            text.style.fontSize = `${cellSize * 0.15}px`;
-                            text.textContent = wellData.group.length > 8 ? wellData.group.substring(0, 6) + '...' : wellData.group;
-                            svg.appendChild(text);
-
-                            // Add subtext
-                            const subtext = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                            subtext.setAttribute('x', cx);
-                            subtext.setAttribute('y', cy + radius + 15);
-                            subtext.setAttribute('text-anchor', 'middle');
-                            subtext.classList.add('well-subtext');
-                            subtext.textContent = `${wellData.timepoint} R${wellData.replicate}`;
-                            svg.appendChild(subtext);
-                        }
-                    }
-                }
-
-                container.appendChild(svg);
-            }
-
-            showTooltip(event, wellData, wellName) {
-                const tooltip = document.getElementById('tooltip');
-                
-                if (wellData) {
-                    tooltip.innerHTML = `
-                        <strong>Well:</strong> ${wellName}<br>
-                        <strong>Group:</strong> ${wellData.group}<br>
-                        <strong>Time:</strong> ${wellData.timepoint}<br>
-                        <strong>Replicate:</strong> ${wellData.replicate}
-                    `;
-                } else {
-                    tooltip.innerHTML = `<strong>Well:</strong> ${wellName}<br><em>Empty</em>`;
-                }
-
-                tooltip.style.left = `${event.pageX + 10}px`;
-                tooltip.style.top = `${event.pageY - 10}px`;
-                tooltip.classList.add('show');
-            }
-
-            hideTooltip() {
-                document.getElementById('tooltip').classList.remove('show');
-            }
-
-            updateLegend(groups) {
-                const legend = document.getElementById('legend');
-                legend.innerHTML = '';
-
-                groups.forEach(group => {
-                    const item = document.createElement('div');
-                    item.className = 'legend-item';
-                    item.innerHTML = `
-                        <div class="legend-color" style="background-color: ${this.colors[group]};"></div>
-                        <span>${group}</span>
-                    `;
-                    legend.appendChild(item);
-                });
-            }
-
-            updateSummary() {
-                const groups = this.getTags('group-tags');
-                const timepoints = this.getTags('timepoint-tags');
-                const replicates = parseInt(document.getElementById('replicates').value) || 0;
-                const plateFormat = document.getElementById('plate-format').value;
-                const plateConfig = this.plateConfigs[plateFormat];
-
-                const needed = groups.length * timepoints.length * replicates;
-                const capacity = plateConfig.rows * plateConfig.cols;
-                const utilization = capacity > 0 ? (needed / capacity) * 100 : 0;
-
-                const summaryGrid = document.getElementById('summary-grid');
-                summaryGrid.innerHTML = `
-                    <div class="summary-item">
-                        <span class="summary-value">${needed}</span>
-                        <span class="summary-label">Wells Needed</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-value">${capacity}</span>
-                        <span class="summary-label">Total Wells</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-value">${utilization.toFixed(1)}%</span>
-                        <span class="summary-label">Utilization</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-value">${capacity - needed}</span>
-                        <span class="summary-label">Remaining</span>
-                    </div>
-                `;
-            }
-
-            // Preset Management
-            savePreset() {
-                const presetName = document.getElementById('preset-name').value.trim();
-                if (!presetName) {
-                    this.showError('Please enter a preset name.');
-                    return;
-                }
-
-                const preset = {
-                    expName: document.getElementById('exp-name').value,
-                    plateFormat: document.getElementById('plate-format').value,
-                    groups: this.getTags('group-tags'),
-                    timepoints: this.getTags('timepoint-tags'),
-                    replicates: document.getElementById('replicates').value
-                };
-
-                const presets = JSON.parse(localStorage.getItem('plateMasterPresets') || '{}');
-                presets[presetName] = preset;
-                localStorage.setItem('plateMasterPresets', JSON.stringify(presets));
-
-                this.loadPresets();
-                document.getElementById('preset-name').value = '';
-                this.showSuccess(`Preset "${presetName}" saved successfully!`);
-            }
-
-            loadPreset() {
-                const presetName = document.getElementById('preset-select').value;
-                if (!presetName) return;
-
-                const presets = JSON.parse(localStorage.getItem('plateMasterPresets') || '{}');
-                const preset = presets[presetName];
-
-                if (!preset) return;
-
-                document.getElementById('exp-name').value = preset.expName || '';
-                document.getElementById('plate-format').value = preset.plateFormat || '96';
-                document.getElementById('replicates').value = preset.replicates || '3';
-
-                // Clear and reload tags
-                this.clearTags('group-tags');
-                this.clearTags('timepoint-tags');
-
-                preset.groups.forEach(group => this.addTag('group-tags', group));
-                preset.timepoints.forEach(timepoint => this.addTag('timepoint-tags', timepoint));
-
-                this.updateSummary();
-                this.drawEmptyPlate();
-                this.showSuccess(`Preset "${presetName}" loaded successfully!`);
-            }
-
-            deletePreset() {
-                const presetName = document.getElementById('preset-select').value;
-                if (!presetName) return;
-
-                if (!confirm(`Delete preset "${presetName}"?`)) return;
-
-                const presets = JSON.parse(localStorage.getItem('plateMasterPresets') || '{}');
-                delete presets[presetName];
-                localStorage.setItem('plateMasterPresets', JSON.stringify(presets));
-
-                this.loadPresets();
-                this.showSuccess(`Preset "${presetName}" deleted successfully!`);
-            }
-
-            loadPresets() {
-                const presets = JSON.parse(localStorage.getItem('plateMasterPresets') || '{}');
-                const select = document.getElementById('preset-select');
-                
-                select.innerHTML = '<option value="">-- Select a preset --</option>';
-                Object.keys(presets).forEach(name => {
-                    const option = document.createElement('option');
-                    option.value = name;
-                    option.textContent = name;
-                    select.appendChild(option);
-                });
-            }
-
-            clearTags(containerId) {
-                const container = document.getElementById(containerId);
-                const tags = container.querySelectorAll('.tag');
-                tags.forEach(tag => tag.remove());
-            }
-
-            // Calculator
-            calculateDilution() {
-                const c1 = parseFloat(document.getElementById('c1').value);
-                const c1Unit = document.getElementById('c1-unit').value;
-                const c2 = parseFloat(document.getElementById('c2').value);
-                const c2Unit = document.getElementById('c2-unit').value;
-                const v2 = parseFloat(document.getElementById('v2').value);
-
-                if (!c1 || !c2 || !v2) {
-                    this.showError('Please fill in all calculator fields.');
-                    return;
-                }
-
-                // Unit conversion
-                let c1Converted = c1;
-                if (c1Unit === 'mM' && c2Unit === 'µM') c1Converted *= 1000;
-                else if (c1Unit === 'µM' && c2Unit === 'mM') c1Converted /= 1000;
-
-                const v1 = (c2 * v2) / c1Converted;
-                const diluentVolume = v2 - v1;
-                const dilutionFactor = c1Converted / c2;
-
-                const resultDiv = document.getElementById('calc-result');
-                resultDiv.innerHTML = `
-                    <h4><i class="fas fa-flask"></i> Dilution Recipe</h4>
-                    <p><strong>Stock volume needed:</strong> ${v1.toFixed(2)} µL</p>
-                    <p><strong>Diluent volume:</strong> ${diluentVolume.toFixed(2)} µL</p>
-                    <p><strong>Dilution factor:</strong> ${dilutionFactor.toFixed(1)}×</p>
-                `;
-                resultDiv.classList.add('show');
-            }
-
-            // Export Functions
-            exportPNG() {
-                if (this.currentLayout.length === 0) {
-                    this.showError('Please generate a layout first.');
-                    return;
-                }
-
-                const svg = document.querySelector('#plate-container svg');
-                if (!svg) return;
-
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                const img = new Image();
-                
-                const svgData = new XMLSerializer().serializeToString(svg);
-                const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
-                const url = URL.createObjectURL(svgBlob);
-
-                img.onload = () => {
-                    const scale = 3; // High resolution
-                    canvas.width = img.width * scale;
-                    canvas.height = img.height * scale;
-                    
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                    canvas.toBlob(blob => {
-                        const link = document.createElement('a');
-                        link.download = `${document.getElementById('exp-name').value || 'plate-layout'}.png`;
-                        link.href = URL.createObjectURL(blob);
-                        link.click();
-                        URL.revokeObjectURL(url);
-                    });
-                };
-                img.src = url;
-            }
-
-            exportSVG() {
-                if (this.currentLayout.length === 0) {
-                    this.showError('Please generate a layout first.');
-                    return;
-                }
-
-                const svg = document.querySelector('#plate-container svg');
-                if (!svg) return;
-
-                const svgData = new XMLSerializer().serializeToString(svg);
-                const blob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
-                const link = document.createElement('a');
-                link.download = `${document.getElementById('exp-name').value || 'plate-layout'}.svg`;
-                link.href = URL.createObjectURL(blob);
-                link.click();
-            }
-
-            exportCSV() {
-                if (this.currentLayout.length === 0) {
-                    this.showError('Please generate a layout first.');
-                    return;
-                }
-
-                let csv = 'Well,Group,Timepoint,Replicate\n';
-                this.currentLayout.forEach(item => {
-                    csv += `${item.well},"${item.group}","${item.timepoint}",${item.replicate}\n`;
-                });
-
-                const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
-                const link = document.createElement('a');
-                link.download = `${document.getElementById('exp-name').value || 'plate-layout'}.csv`;
-                link.href = URL.createObjectURL(blob);
-                link.click();
-            }
-
-            // Utility functions
-            showError(message) {
-                alert(`❌ Error: ${message}`);
-            }
-
-            showSuccess(message) {
-                alert(`✅ Success: ${message}`);
-            }
-        }
-
-        // Initialize the app
-        const app = new PlateMasterApp();
-    </script>
+    <div id="notification-container"></div>
+    <div id="modal-container"></div>
+    <div id="tooltip" class="fixed z-[1060] bg-slate-800 text-white text-sm px-3 py-2 rounded-md shadow-lg pointer-events-none opacity-0 transition-opacity"></div>
+    
+    <script src="app.js"></script>
 </body>
 </html>

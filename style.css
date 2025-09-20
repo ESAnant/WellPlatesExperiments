@@ -1,0 +1,17 @@
+body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+.main-tab.active { border-color: #0d9488; color: #0d9488; background-color: #f0fdfa; }
+.main-tab:not(.active) { border-color: transparent; }
+.app-section { display: none; }
+.app-section.active { display: grid; }
+.well:hover { transform: scale(1.05); filter: brightness(1.08); }
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform: translateX(120%);
+}
+.toast-notification.show { transform: translateX(0); }
+#plate-container.paint-mode .well { cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%230d9488"><path d="M17.25 2.75a.75.75 0 00-1.06 0L15 3.94l-3.72-3.72a.75.75 0 00-1.06 0L9.5 1.11a.75.75 0 00-1.06 0l-5.69 5.69a.75.75 0 000 1.06l.88.88-2.12 2.12a.75.75 0 000 1.06l4.24 4.24a.75.75 0 001.06 0l2.12-2.12.88.88a.75.75 0 001.06 0l5.69-5.69a.75.75 0 000-1.06l-.88-.88 1.19-1.19a.75.75 0 000-1.06L17.25 2.75z"/></svg>'), auto; }
+#plate-container.erase-mode .well { cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%23f43f5e"><path d="M10 2a1 1 0 00-1 1v1H6a2 2 0 00-2 2v2h12V6a2 2 0 00-2-2h-3V3a1 1 0 00-1-1H10zM5 10v9a2 2 0 002 2h10a2 2 0 002-2v-9H5z"/></svg>'), auto; }
