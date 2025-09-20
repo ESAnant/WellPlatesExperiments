@@ -15,14 +15,37 @@ class WellPlatePalApp {
         this.plateConfigs = {"96":{rows:8,cols:12,rowLabels:['A','B','C','D','E','F','G','H']},"48":{rows:6,cols:8,rowLabels:['A','B','C','D','E','F']},"24":{rows:4,cols:6,rowLabels:['A','B','C','D']},"12":{rows:3,cols:4,rowLabels:['A','B','C']},"6":{rows:2,cols:3,rowLabels:['A','B']}};
         this.baseColors = ['#2dd4bf', '#60a5fa', '#c084fc', '#f87171', '#fbbf24', '#a3e635', '#f472b6', '#34d399', '#818cf8', '#fca5a5', '#fde047', '#4ade80'];
         this.doseResponseChart = null;
+        this.pyodide = null;
         this.init();
     }
 
-    init() {
+    async init() {
         this.buildCalculatorDOM();
         this.setupEventListeners();
         this.loadSessions();
         this.switchTab(this.state.ui.activeSection);
+        await this.initPyodide();
+    }
+
+    async initPyodide() {
+        try {
+            this.pyodide = await loadPyodide();
+            await this.pyodide.loadPackage(['numpy', 'scipy']);
+            const response = await fetch('analysis.py');
+            const pythonCode = await response.text();
+            this.pyodide.runPython(pythonCode);
+            const statusDiv = document.getElementById('pyodide-status');
+            statusDiv.querySelector('div').classList.remove('bg-amber-400', 'animate-pulse');
+            statusDiv.querySelector('div').classList.add('bg-teal-400');
+            statusDiv.querySelector('span').textContent = 'Python Ready';
+        } catch (error) {
+            console.error("Pyodide initialization failed:", error);
+            const statusDiv = document.getElementById('pyodide-status');
+            statusDiv.querySelector('div').classList.remove('bg-amber-400', 'animate-pulse');
+            statusDiv.querySelector('div').classList.add('bg-red-400');
+            statusDiv.querySelector('span').textContent = 'Python Failed';
+            this.showNotification('Could not load Python analysis engine. Using JS fallback.', 'warning');
+        }
     }
 
     // --- CORE STATE & RENDER --- //
@@ -243,21 +266,32 @@ class WellPlatePalApp {
             <div class="text-sm font-semibold text-slate-600">${interpretation}</div>`;
     }
     
-    performFourPL(data) {
-        // This is a simplified interpolation method, not a true non-linear regression.
-        // It provides a reasonable estimate if the data points closely bracket the 50% mark.
-        // For publication-quality results, use dedicated software like Prism or R.
+    async performFourPL(data) {
+        if (this.pyodide) {
+            try {
+                const concentrations = JSON.stringify(data.map(d => d.x));
+                const responses = JSON.stringify(data.map(d => d.y));
+                const resultsPy = this.pyodide.globals.get('analyze_dose_response_py')(concentrations, responses);
+                const results = JSON.parse(resultsPy);
+                if(results.success) {
+                    return results;
+                } else {
+                    this.showNotification(`Python error: ${results.error}`, 'error');
+                    return { ic50: NaN, top: 0, bottom: 0, hillSlope: 1 };
+                }
+            } catch(e) {
+                this.showNotification(`Pyodide execution failed: ${e.message}`, 'error');
+                return { ic50: NaN, top: 0, bottom: 0, hillSlope: 1 };
+            }
+        }
+
+        // Fallback JS interpolation
         const sortedData = [...data].sort((a,b) => a.x - b.x);
-        
         const y = sortedData.map(p => p.y);
-        
         const bottom = Math.min(...y);
         const top = Math.max(...y);
-        
         if (top === bottom) return { ic50: NaN, top, bottom, slope: 0 };
-        
         const halfResponse = bottom + (top - bottom) / 2;
-        
         let p1, p2;
         for(let i = 0; i < sortedData.length - 1; i++){
             if((sortedData[i].y >= halfResponse && sortedData[i+1].y <= halfResponse) || (sortedData[i].y <= halfResponse && sortedData[i+1].y >= halfResponse)){
@@ -266,25 +300,19 @@ class WellPlatePalApp {
                 break;
             }
         }
-
-        if(!p1 || !p2 || p1.x <= 0 || p2.x <= 0) return { ic50: NaN, top, bottom, slope:1};
-
-        // Linear interpolation on log-transformed x-values
+        if(!p1 || !p2 || p1.x <= 0 || p2.x <= 0) return { ic50: NaN, top, bottom, hillSlope:1};
         const logP1x = Math.log10(p1.x);
         const logP2x = Math.log10(p2.x);
         const slope = (p2.y - p1.y) / (logP2x - logP1x);
-        if (slope === 0) return { ic50: NaN, top, bottom, slope: 0 };
-        
+        if (slope === 0) return { ic50: NaN, top, bottom, hillSlope: 0 };
         const logIC50 = logP1x + (halfResponse - p1.y) / slope;
-
         return {
             ic50: Math.pow(10, logIC50),
             top: top,
             bottom: bottom,
-            slope: 1 // Simplified HillSlope - a true value requires iterative fitting.
+            hillSlope: 1 // Simplified HillSlope
         };
     }
-
 
     // --- DYNAMIC RENDERING --- //
     renderPlate() { 
@@ -668,7 +696,7 @@ class WellPlatePalApp {
         document.getElementById('dr-conc-input').value = series.map(s => Number(s.toPrecision(3))).join(',');
     }
 
-    analyzeDoseResponse() {
+    async analyzeDoseResponse() {
         const groupName = document.getElementById('dr-group-select').value;
         const concText = document.getElementById('dr-conc-input').value;
         if (!groupName || !concText) return this.showNotification('Please select a group and enter concentrations.', 'error');
@@ -684,13 +712,12 @@ class WellPlatePalApp {
         const { avgBlank, range } = this.getAnalysisData();
         const replicates = Math.floor(rawData.length / concentrations.length);
         
-        if (concentrations.length * replicates !== rawData.length) {
+        if (concentrations.length === 0 || rawData.length === 0 || replicates === 0 || concentrations.length * replicates !== rawData.length) {
             return this.showNotification(`Data mismatch: The number of data points (${rawData.length}) is not an even multiple of the number of concentrations (${concentrations.length}).`, 'error');
         }
 
         const normalizedData = rawData.map(v => range ? ((v - avgBlank) / range) * 100 : 0);
         
-        // Average the replicates for each concentration
         const averagedData = [];
         for (let i = 0; i < concentrations.length; i++) {
             const repsSlice = normalizedData.slice(i * replicates, (i + 1) * replicates);
@@ -698,11 +725,11 @@ class WellPlatePalApp {
             averagedData.push({ x: concentrations[i], y: avg });
         }
 
-        const fit = this.performFourPL(averagedData);
+        const fit = await this.performFourPL(averagedData);
 
         document.getElementById('dr-result').innerHTML = `
             <span class="font-semibold">IC50/EC50:</span> <span class="font-bold text-teal-600">${fit.ic50.toPrecision(3)}</span> | 
-            <span class="font-semibold">HillSlope (est.):</span> <span class="font-bold">${fit.slope.toFixed(2)}</span>`;
+            <span class="font-semibold">HillSlope:</span> <span class="font-bold">${fit.hillSlope.toFixed(2)}</span>`;
             
         this.plotDoseResponse(averagedData, fit);
     }
@@ -722,8 +749,7 @@ class WellPlatePalApp {
             for (let i = 0; i < 50; i++) {
                 const logX = minLogConc + (maxLogConc - minLogConc) * (i / 49);
                 const x = Math.pow(10, logX);
-                // Using the standard 4PL equation. Note: the simplified `fit.slope` isn't a true Hill Slope.
-                const y = fit.bottom + (fit.top - fit.bottom) / (1 + Math.pow(fit.ic50 / x, 1)); 
+                const y = fit.bottom + (fit.top - fit.bottom) / (1 + Math.pow(x / fit.ic50, fit.hillSlope)); 
                 curvePoints.push({x, y});
             }
         }
@@ -738,7 +764,7 @@ class WellPlatePalApp {
                     type: 'scatter',
                     pointRadius: 5
                 }, {
-                    label: 'Curve Fit (Approximation)',
+                    label: '4PL Curve Fit',
                     data: curvePoints,
                     borderColor: 'rgba(244, 63, 94, 0.8)',
                     type: 'line',
@@ -768,3 +794,4 @@ class WellPlatePalApp {
         document.body.removeChild(a);
     }
 }
+

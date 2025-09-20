@@ -6,6 +6,7 @@
     <title>WellPlate Pal - Advanced Experiment Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -28,6 +29,10 @@
                     <button onclick="app.switchTab('advanced-analysis')" data-tab-id="advanced-analysis" class="main-tab text-sm font-semibold px-3 py-1 rounded-md transition-colors">Advanced Analysis</button>
                     <button onclick="app.switchTab('export')" data-tab-id="export" class="main-tab text-sm font-semibold px-3 py-1 rounded-md transition-colors">Export & Notes</button>
                 </nav>
+                 <div id="pyodide-status" class="flex items-center gap-2 text-sm text-slate-500">
+                    <div class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></div>
+                    <span>Initializing Python...</span>
+                </div>
             </div>
         </header>
 
@@ -183,3 +188,4 @@
     <script src="app.js"></script>
 </body>
 </html>
+
