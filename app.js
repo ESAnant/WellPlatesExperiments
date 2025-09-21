@@ -38,11 +38,25 @@ class WellPlatePalApp {
 
         // Render complex components based on active tab
         const activeTab = ui.activeSection;
-        if (activeTab === 'design') { this.renderGroups(); this.renderPlate(); this.renderLegend(); this.renderInteractionMode(); this.renderActiveGroup(); }
-        if (activeTab === 'data-input') { this.renderDataGrid(); this.renderDataTargets(); }
-        if (activeTab === 'analysis') { this.renderAnalysisControls(); this.renderAnalysisResults(); this.renderHeatmap(); }
-        if (activeTab === 'advanced-analysis') { this.renderZFactor(); this.renderDoseResponse(); }
-        if (activeTab === 'calculators') { this.buildCalculatorDOM(); }
+        if (activeTab === 'design') { 
+            this.renderGroups(); 
+            this.renderPlate(); 
+            this.renderLegend(); 
+            this.renderInteractionMode(); 
+            this.renderActiveGroup(); 
+        } else if (activeTab === 'data-input') { 
+            this.renderDataGrid(); 
+            this.renderDataTargets(); 
+        } else if (activeTab === 'analysis') { 
+            this.renderAnalysisControls(); 
+            this.renderAnalysisResults(); 
+            this.renderHeatmap(); 
+        } else if (activeTab === 'advanced-analysis') { 
+            this.renderZFactor(); 
+            this.renderDoseResponse(); 
+        } else if (activeTab === 'calculators') { 
+            this.buildCalculatorDOM(); 
+        }
     }
     
     // --- EVENT LISTENERS --- //

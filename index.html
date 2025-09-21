@@ -36,36 +36,20 @@
         <main class="flex-1 w-full max-w-screen-2xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-1 flex flex-col gap-6">
                 <section id="design" class="app-section active flex flex-col gap-6">
-                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
-                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Experiment Setup</h3>
-                        <div class="space-y-4">
-                            <div><label for="exp-name" class="block text-sm font-medium text-slate-600 mb-1">Experiment Name</label><input type="text" id="exp-name" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500" placeholder="e.g., Cytotoxicity Assay"></div>
-                            <div><label for="plate-format" class="block text-sm font-medium text-slate-600 mb-1">Plate Format</label><select id="plate-format" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"><option value="96">96-Well</option><option value="48">48-Well</option><option value="24">24-Well</option><option value="12">12-Well</option><option value="6">6-Well</option></select></div>
-                        </div>
-                    </div>
-                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
-                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Group Management</h3>
-                        <div class="space-y-2">
-                             <div>
-                                <label class="block text-sm font-medium text-slate-600 mb-1">Add Group</label>
-                                <div id="group-tags" class="p-2 border border-slate-300 rounded-md flex flex-wrap gap-2 items-center bg-white min-h-[40px]"><input type="text" id="group-input" class="flex-grow bg-transparent border-none focus:ring-0 text-sm" placeholder="Type name & press Enter..."></div>
-                            </div>
-                            <div>
-                                <label for="group-type-select" class="block text-sm font-medium text-slate-600 mb-1">Set Selected Group Type</label>
-                                <select id="group-type-select" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
-                                    <option value="Normal">Normal</option>
-                                    <option value="Dose-Response">Dose-Response Series</option>
-                                </select>
+                    <div class="lg:col-span-2 bg-white p-5 rounded-lg shadow-sm border border-slate-200 flex flex-col">
+                        <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
+                            <h3 id="plate-title-design" class="text-lg font-semibold text-slate-800">Plate Layout</h3>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <div id="active-group-indicator" class="hidden items-center gap-2 text-sm"><span class="font-medium">Active Group:</span><span id="active-group-label" class="font-bold p-1 px-3 rounded-full text-white"></span></div>
+                                <div class="flex items-center gap-2 border border-slate-300 rounded-lg p-1 bg-slate-50">
+                                    <button id="paint-mode-btn" class="px-3 py-1 text-sm rounded-md flex items-center gap-2 transition" title="Paint Mode"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg></button>
+                                    <button id="erase-mode-btn" class="px-3 py-1 text-sm rounded-md flex items-center gap-2 transition" title="Erase Mode"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg></button>
+                                </div>
+                                <button onclick="app.clearLayout()" class="bg-slate-200 text-slate-700 text-sm font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition" title="Clear all wells on the plate">Clear Plate</button>
                             </div>
                         </div>
-                    </div>
-                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
-                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Automated Layout</h3>
-                        <div class="space-y-4">
-                            <div><label for="replicates" class="block text-sm font-medium text-slate-600 mb-1">Replicates per Group</label><input type="number" id="replicates" value="3" min="1" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"></div>
-                            <div><label for="layout-direction" class="block text-sm font-medium text-slate-600 mb-1">Fill Direction</label><select id="layout-direction" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"><option value="by-row">By Row</option><option value="by-column">By Column</option></select></div>
-                            <div class="flex gap-2"><button id="generate-layout-btn" class="flex-1 w-full bg-teal-600 text-white font-semibold py-2 px-3 rounded-lg shadow-sm hover:bg-teal-700 transition" title="Fill plate automatically based on groups and replicates">Generate</button><button id="randomize-btn" class="flex-1 w-full bg-slate-600 text-white font-semibold py-2 px-3 rounded-lg shadow-sm hover:bg-slate-700 transition" title="Randomize well positions to prevent plate effects">Randomize</button></div>
-                        </div>
+                        <div id="plate-container" class="w-full flex-1 min-h-[300px] flex items-center justify-center rounded-lg bg-slate-50 border-2 border-dashed border-slate-200"></div>
+                        <div id="legend" class="mt-4 flex flex-wrap gap-x-4 gap-y-2"></div>
                     </div>
                 </section>
 
@@ -154,22 +138,6 @@
                 </section>
                 <section id="calculators" class="app-section flex-col gap-6">
                 </section>
-            </div>
-
-            <div class="lg:col-span-2 bg-white p-5 rounded-lg shadow-sm border border-slate-200 flex flex-col">
-                <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
-                    <h3 id="plate-title-design" class="text-lg font-semibold text-slate-800">Plate Layout</h3>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <div id="active-group-indicator" class="hidden items-center gap-2 text-sm"><span class="font-medium">Active Group:</span><span id="active-group-label" class="font-bold p-1 px-3 rounded-full text-white"></span></div>
-                        <div class="flex items-center gap-2 border border-slate-300 rounded-lg p-1 bg-slate-50">
-                            <button id="paint-mode-btn" class="px-3 py-1 text-sm rounded-md flex items-center gap-2 transition" title="Paint Mode"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg></button>
-                            <button id="erase-mode-btn" class="px-3 py-1 text-sm rounded-md flex items-center gap-2 transition" title="Erase Mode"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg></button>
-                        </div>
-                        <button onclick="app.clearLayout()" class="bg-slate-200 text-slate-700 text-sm font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition" title="Clear all wells on the plate">Clear Plate</button>
-                    </div>
-                </div>
-                <div id="plate-container" class="w-full flex-1 min-h-[300px] flex items-center justify-center rounded-lg bg-slate-50 border-2 border-dashed border-slate-200"></div>
-                <div id="legend" class="mt-4 flex flex-wrap gap-x-4 gap-y-2"></div>
             </div>
         </main>
     </div>
