@@ -8,7 +8,7 @@ class WellPlatePalApp {
             settings: { expName: '', plateFormat: '96', replicates: 3, layoutDirection: 'by-row', notes: '' },
             groups: [], // { name: 'Control', color: '#RRGGBB', type: 'Normal'/'Dose-Response', concentrations: [] }
             layout: {}, // { 'A1': { group: 'Control', replicate: 1 }, ... }
-            data: {},   // { 'A1': 1.234, ... }
+            data: { targets: ['Default'], values: {}, activeTarget: 'Default' },   // { targets: ['IL-6', 'IL-8'], values: { 'A1': { 'IL-6': 1.23, 'IL-8': 4.56 } } }
             analysis: { blankControl: '', positiveControl: '', heatmapMode: 'raw' },
             ui: { activeSection: 'design', activeGroup: null, interactionMode: 'paint', isPainting: false, selectedWellData: null }
         };
@@ -62,7 +62,7 @@ class WellPlatePalApp {
         // Render complex components based on active tab
         const activeTab = ui.activeSection;
         if (activeTab === 'design') { this.renderGroups(); this.renderPlate(); this.renderLegend(); this.renderInteractionMode(); this.renderActiveGroup(); }
-        if (activeTab === 'data-input') { this.renderDataGrid(); }
+        if (activeTab === 'data-input') { this.renderDataGrid(); this.renderDataTargets(); }
         if (activeTab === 'analysis') { this.renderAnalysisControls(); this.renderAnalysisResults(); this.renderHeatmap(); }
         if (activeTab === 'advanced-analysis') { this.renderZFactor(); this.renderDoseResponse(); }
     }
@@ -71,7 +71,7 @@ class WellPlatePalApp {
     setupEventListeners() {
         // Settings
         document.getElementById('exp-name').addEventListener('input', e => this.state.settings.expName = e.target.value);
-        document.getElementById('plate-format').addEventListener('change', e => this.setState(s => { s.settings.plateFormat = e.target.value; s.layout = {}; s.data = {}; }));
+        document.getElementById('plate-format').addEventListener('change', e => this.setState(s => { s.settings.plateFormat = e.target.value; s.layout = {}; s.data = { targets: ['Default'], values: {}, activeTarget: 'Default' }; }));
         document.getElementById('replicates').addEventListener('input', e => this.state.settings.replicates = parseInt(e.target.value) || 1);
         document.getElementById('layout-direction').addEventListener('change', e => this.state.settings.layoutDirection = e.target.value);
         document.getElementById('exp-notes').addEventListener('input', e => this.state.settings.notes = e.target.value);
@@ -84,6 +84,7 @@ class WellPlatePalApp {
         document.getElementById('erase-mode-btn').addEventListener('click', () => this.setState(s => s.ui.interactionMode = 'erase'));
         // Data Input
         document.getElementById('selected-well-input').addEventListener('change', e => this.updateWellData(this.state.ui.selectedWellData, e.target.value));
+        document.getElementById('add-target-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); this.addDataTarget(e.target.value); e.target.value = ''; } });
         // Analysis
         document.getElementById('blank-control-select').addEventListener('change', e => this.setState(s => s.analysis.blankControl = e.target.value));
         document.getElementById('positive-control-select').addEventListener('change', e => this.setState(s => s.analysis.positiveControl = e.target.value));
@@ -105,7 +106,12 @@ class WellPlatePalApp {
     addGroup(name) {
         name = name.trim(); if (!name || this.state.groups.some(g => g.name === name)) return;
         const newGroup = { name, color: this.baseColors[this.state.groups.length % this.baseColors.length], type: 'Normal', concentrations: [] };
-        this.setState(s => { s.groups.push(newGroup); if (!s.ui.activeGroup) s.ui.activeGroup = name; });
+        this.setState(s => { 
+            s.groups.push(newGroup); 
+            s.ui.activeGroup = name; 
+            s.ui.interactionMode = 'paint'; 
+        });
+        this.showNotification(`Group "${name}" added and selected. You can now paint on the plate.`, 'info');
     }
     removeGroup(name) {
         this.setState(s => {
@@ -146,7 +152,7 @@ class WellPlatePalApp {
         layoutValues.forEach((value, index) => { newLayout[wellNames[index]] = value; });
         this.setState(s => s.layout = newLayout);
     }
-    clearLayout() { this.setState(s => { s.layout = {}; s.data = {}; }); }
+    clearLayout() { this.setState(s => { s.layout = {}; s.data = { targets: ['Default'], values: {}, activeTarget: 'Default' }; }); }
     handleWellInteraction(wellName, eventType) {
         if (eventType === 'start') this.state.ui.isPainting = true;
         if (eventType === 'end') { this.state.ui.isPainting = false; return; }
@@ -178,41 +184,75 @@ class WellPlatePalApp {
     getWellList() { const wells = [], conf = this.plateConfigs[this.state.settings.plateFormat]; for (let i=0;i<conf.rows;i++) for (let j=0;j<conf.cols;j++) wells.push(`${conf.rowLabels[i]}${j + 1}`); return wells; }
     
     // --- DATA INPUT TAB LOGIC --- //
+    addDataTarget(name) {
+        name = name.trim();
+        if (!name || this.state.data.targets.includes(name)) return;
+        this.setState(s => {
+            s.data.targets.push(name);
+            s.data.activeTarget = name;
+        });
+    }
+    removeDataTarget(name) {
+        if (this.state.data.targets.length <= 1) return this.showNotification('Cannot remove the last data target.', 'error');
+        this.setState(s => {
+            s.data.targets = s.data.targets.filter(t => t !== name);
+            if (s.data.activeTarget === name) s.data.activeTarget = s.data.targets[0];
+            // Also remove data associated with this target
+            Object.values(s.data.values).forEach(wellData => delete wellData[name]);
+        });
+    }
+    setActiveDataTarget(name) {
+        this.setState(s => s.data.activeTarget = name);
+    }
     parsePastedData() {
         const text = document.getElementById('paste-data-input').value.trim();
         const rows = text.split('\n').map(r => r.split(/[\t,]/));
         const plateConfig = this.plateConfigs[this.state.settings.plateFormat];
         if (rows.length > plateConfig.rows || rows[0].length > plateConfig.cols) return this.showNotification('Pasted data dimensions exceed plate format.', 'error');
-        const newData = {};
-        rows.forEach((row, rIdx) => {
-            row.forEach((val, cIdx) => {
-                const wellName = `${plateConfig.rowLabels[rIdx]}${cIdx + 1}`;
-                const numVal = parseFloat(val);
-                if (!isNaN(numVal)) newData[wellName] = numVal;
+        
+        const { activeTarget } = this.state.data;
+        this.setState(s => {
+            rows.forEach((row, rIdx) => {
+                row.forEach((val, cIdx) => {
+                    const wellName = `${plateConfig.rowLabels[rIdx]}${cIdx + 1}`;
+                    const numVal = parseFloat(val);
+                    if (!isNaN(numVal)) {
+                        if (!s.data.values[wellName]) s.data.values[wellName] = {};
+                        s.data.values[wellName][activeTarget] = numVal;
+                    }
+                });
             });
         });
-        this.setState(s => s.data = newData);
     }
     selectWellForDataInput(wellName) {
         this.setState(s => s.ui.selectedWellData = wellName);
         document.getElementById('selected-well-label').textContent = wellName;
         const input = document.getElementById('selected-well-input');
-        input.value = this.state.data[wellName] || '';
+        const { activeTarget } = this.state.data;
+        input.value = this.state.data.values[wellName]?.[activeTarget] || '';
         input.focus();
     }
     updateWellData(wellName, value) {
         if (!wellName) return;
         const numVal = parseFloat(value);
+        const { activeTarget } = this.state.data;
         this.setState(s => {
-            if (!isNaN(numVal)) s.data[wellName] = numVal; else delete s.data[wellName];
+            if (!s.data.values[wellName]) s.data.values[wellName] = {};
+            if (!isNaN(numVal)) {
+                s.data.values[wellName][activeTarget] = numVal;
+            } else {
+                delete s.data.values[wellName][activeTarget];
+            }
         });
     }
 
     // --- ANALYSIS TAB LOGIC --- //
     getAnalysisData() {
         const { layout, data, analysis, groups } = this.state;
-        const blankValues = Object.keys(layout).filter(w => layout[w].group === analysis.blankControl).map(w => data[w]).filter(v => v !== undefined);
-        const positiveValues = Object.keys(layout).filter(w => layout[w].group === analysis.positiveControl).map(w => data[w]).filter(v => v !== undefined);
+        const { values, activeTarget } = data;
+
+        const blankValues = Object.keys(layout).filter(w => layout[w].group === analysis.blankControl).map(w => values[w]?.[activeTarget]).filter(v => v !== undefined);
+        const positiveValues = Object.keys(layout).filter(w => layout[w].group === analysis.positiveControl).map(w => values[w]?.[activeTarget]).filter(v => v !== undefined);
         const avgBlank = blankValues.length ? blankValues.reduce((a,b)=>a+b,0) / blankValues.length : 0;
         const avgPositive = positiveValues.length ? positiveValues.reduce((a,b)=>a+b,0) / positiveValues.length : 0;
         const range = avgPositive - avgBlank;
@@ -220,7 +260,7 @@ class WellPlatePalApp {
         const results = {};
         groups.forEach(g => {
             const wells = Object.keys(layout).filter(w => layout[w].group === g.name);
-            const raw = wells.map(w => data[w]).filter(v => v !== undefined);
+            const raw = wells.map(w => values[w]?.[activeTarget]).filter(v => v !== undefined);
             if (raw.length === 0) return;
             
             const sum = raw.reduce((a,b)=>a+b,0);
@@ -320,7 +360,17 @@ class WellPlatePalApp {
         if (!container) return;
         const plateConfig = this.plateConfigs[this.state.settings.plateFormat];
         if (Object.keys(this.state.layout).length === 0 && this.state.groups.length === 0) {
-            container.innerHTML = `<div class="text-center text-slate-500 p-4"><h3 class="font-semibold text-lg mb-2">Welcome to WellPlate Pal!</h3><ol class="text-left max-w-xs mx-auto list-decimal list-inside space-y-1"><li><strong>Add Groups:</strong> Type a name and press Enter.</li><li><strong>Design Plate:</strong> Click a group to activate it, then click or drag on wells to "paint".</li><li><strong>Export:</strong> Get your layout as an image or CSV.</li></ol></div>`;
+            container.innerHTML = `<div class="text-center text-slate-500 p-4">
+            <h3 class="font-semibold text-lg mb-2">Welcome to WellPlate Pal!</h3>
+            <p class="mb-4">A simple tool to design and analyze your well plate experiments.</p>
+            <ol class="text-left max-w-md mx-auto list-decimal list-inside space-y-2">
+                <li><strong>Name Your Experiment:</strong> Give your experiment a name in the "Experiment Setup" panel.</li>
+                <li><strong>Add Treatment Groups:</strong> In the "Group Management" panel, type the name of a condition (e.g., "Control", "Drug A") and press Enter.</li>
+                <li><strong>Design Your Plate:</strong> Click a group to select it, then click or drag on the wells to paint your layout.</li>
+                <li><strong>Input Data:</strong> Go to the "Data Input" tab to paste or manually enter your experimental results.</li>
+                <li><strong>Analyze:</strong> Use the "Analysis" and "Advanced Analysis" tabs to see your results.</li>
+            </ol>
+            </div>`;
             return;
         }
         container.innerHTML = ''; // Clear previous
@@ -375,10 +425,12 @@ class WellPlatePalApp {
         for (let i = 0; i < rows; i++) svg.appendChild(this._createSVGElement('text', { x: 15, y: i * 60 + 65, class: 'font-semibold text-slate-500 text-sm', 'text-anchor': 'middle' }, rowLabels[i]));
         for (let j = 0; j < cols; j++) svg.appendChild(this._createSVGElement('text', { x: j * 60 + 65, y: 15, class: 'font-semibold text-slate-500 text-sm', 'text-anchor': 'middle' }, j + 1));
 
+        const { values, activeTarget } = this.state.data;
+
         for (let i = 0; i < rows; i++) {
             for (let j = 0; j < cols; j++) {
                 const wellName = `${rowLabels[i]}${j + 1}`;
-                const wellValue = this.state.data[wellName];
+                const wellValue = values[wellName]?.[activeTarget];
                 const g = this._createSVGElement('g', { class: 'cursor-pointer' });
                 
                 const rect = this._createSVGElement('rect', {
@@ -396,13 +448,28 @@ class WellPlatePalApp {
         }
         container.appendChild(svg);
     }
+    renderDataTargets() {
+        const container = document.getElementById('data-targets-container');
+        if (!container) return;
+        const { targets, activeTarget } = this.state.data;
+        container.innerHTML = '';
+        targets.forEach(target => {
+            const isActive = target === activeTarget;
+            const button = document.createElement('button');
+            button.className = `data-target-btn flex items-center gap-2 text-sm font-medium pl-3 pr-2 py-1 rounded-full cursor-pointer transition ${isActive ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-600'}`;
+            button.innerHTML = `<span>${target}</span><button class="w-4 h-4 rounded-full bg-black/10 text-white flex items-center justify-center text-xs hover:bg-black/20">&times;</button>`;
+            button.onclick = () => this.setActiveDataTarget(target);
+            button.querySelector('button').onclick = e => { e.stopPropagation(); this.removeDataTarget(target); };
+            container.appendChild(button);
+        });
+    }
     renderHeatmap() {
         const container = document.getElementById('heatmap-container');
         if (!container) return;
         const plateConfig = this.plateConfigs[this.state.settings.plateFormat];
         container.innerHTML = '';
         const { results, avgBlank, range } = this.getAnalysisData();
-        const allValues = Object.values(this.state.data);
+        const allValues = Object.values(this.state.data.values).map(well => well[this.state.data.activeTarget]).filter(v => v !== undefined);
         if (allValues.length === 0) {
             container.innerHTML = `<div class="text-center text-slate-500 p-4">Enter data in the "Data Input" tab to see a heatmap.</div>`;
             return;
@@ -430,10 +497,10 @@ class WellPlatePalApp {
                 const wellName = `${rowLabels[i]}${j + 1}`;
                 let value;
                 if (this.state.analysis.heatmapMode === 'normalized') {
-                    const rawVal = this.state.data[wellName];
+                    const rawVal = this.state.data.values[wellName]?.[this.state.data.activeTarget];
                     value = (rawVal !== undefined && range) ? ((rawVal - avgBlank) / range) * 100 : undefined;
                 } else {
-                    value = this.state.data[wellName];
+                    value = this.state.data.values[wellName]?.[this.state.data.activeTarget];
                 }
                 const rect = this._createSVGElement('rect', {
                     x: j * 50 + 35, y: i * 50 + 35, width: 48, height: 48, rx: 4,
@@ -509,12 +576,91 @@ class WellPlatePalApp {
     renderAnalysisControls() {
         const blankSelect = document.getElementById('blank-control-select');
         const posSelect = document.getElementById('positive-control-select');
-        if (!blankSelect || !posSelect) return;
-        const options = this.state.groups.map(g => `<option value="${g.name}">${g.name}</option>`).join('');
-        blankSelect.innerHTML = `<option value="">None</option>${options}`;
-        posSelect.innerHTML = `<option value="">None</option>${options}`;
+        const comparisonGroupsSelect = document.getElementById('comparison-groups-select');
+        const comparisonTargetSelect = document.getElementById('comparison-target-select');
+
+        if (!blankSelect || !posSelect || !comparisonGroupsSelect || !comparisonTargetSelect) return;
+
+        const groupOptions = this.state.groups.map(g => `<option value="${g.name}">${g.name}</option>`).join('');
+        const targetOptions = this.state.data.targets.map(t => `<option value="${t}">${t}</option>`).join('');
+
+        blankSelect.innerHTML = `<option value="">None</option>${groupOptions}`;
+        posSelect.innerHTML = `<option value="">None</option>${groupOptions}`;
+        comparisonGroupsSelect.innerHTML = groupOptions;
+        comparisonTargetSelect.innerHTML = targetOptions;
+
         blankSelect.value = this.state.analysis.blankControl;
         posSelect.value = this.state.analysis.positiveControl;
+        comparisonTargetSelect.value = this.state.data.activeTarget;
+    }
+
+    renderComparisonChart() {
+        const selectedGroups = Array.from(document.getElementById('comparison-groups-select').selectedOptions).map(opt => opt.value);
+        const selectedTarget = document.getElementById('comparison-target-select').value;
+
+        if (selectedGroups.length === 0 || !selectedTarget) {
+            return this.showNotification('Please select at least one group and a data target to compare.', 'info');
+        }
+
+        const chartData = {
+            labels: selectedGroups,
+            datasets: [{
+                label: selectedTarget,
+                data: selectedGroups.map(groupName => {
+                    const groupData = this.getGroupData(groupName, selectedTarget);
+                    return groupData.mean;
+                }),
+                backgroundColor: selectedGroups.map(groupName => {
+                    const group = this.state.groups.find(g => g.name === groupName);
+                    return group ? group.color : '#cccccc';
+                }),
+                borderColor: selectedGroups.map(groupName => {
+                    const group = this.state.groups.find(g => g.name === groupName);
+                    return group ? group.color : '#cccccc';
+                }),
+                borderWidth: 1,
+                errorBars: selectedGroups.reduce((acc, groupName) => {
+                    const groupData = this.getGroupData(groupName, selectedTarget);
+                    acc[groupName] = { plus: groupData.stdDev, minus: groupData.stdDev };
+                    return acc;
+                }, {})
+            }]
+        };
+
+        const ctx = document.getElementById('comparison-chart').getContext('2d');
+        if (this.comparisonChart) {
+            this.comparisonChart.destroy();
+        }
+
+        this.comparisonChart = new Chart(ctx, {
+            type: 'bar',
+            data: chartData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: selectedTarget }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y.toFixed(3);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
     renderAnalysisResults() {
         const container = document.getElementById('analysis-results-table');
@@ -676,8 +822,9 @@ class WellPlatePalApp {
     
     getGroupData(groupName) {
         const { layout, data } = this.state;
+        const { values, activeTarget } = data;
         const wells = this.getWellList().filter(w => layout[w]?.group === groupName);
-        const raw = wells.map(w => data[w]).filter(v => v !== undefined);
+        const raw = wells.map(w => values[w]?.[activeTarget]).filter(v => v !== undefined);
         return { wells, raw };
     }
     

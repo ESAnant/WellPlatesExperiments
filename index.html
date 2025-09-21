@@ -23,7 +23,6 @@
                 </div>
                 <nav class="flex items-center border border-slate-200 rounded-lg p-1 space-x-1 bg-slate-100">
                     <button onclick="app.switchTab('design')" data-tab-id="design" class="main-tab active text-sm font-semibold px-3 py-1 rounded-md transition-colors">Design</button>
-                    <button onclick="app.switchTab('calculators')" data-tab-id="calculators" class="main-tab text-sm font-semibold px-3 py-1 rounded-md transition-colors">Calculators</button>
                     <button onclick="app.switchTab('data-input')" data-tab-id="data-input" class="main-tab text-sm font-semibold px-3 py-1 rounded-md transition-colors">Data Input</button>
                     <button onclick="app.switchTab('analysis')" data-tab-id="analysis" class="main-tab text-sm font-semibold px-3 py-1 rounded-md transition-colors">Analysis</button>
                     <button onclick="app.switchTab('advanced-analysis')" data-tab-id="advanced-analysis" class="main-tab text-sm font-semibold px-3 py-1 rounded-md transition-colors">Advanced Analysis</button>
@@ -36,10 +35,10 @@
             </div>
         </header>
 
-        <main class="flex-1 w-full max-w-screen-2xl mx-auto p-4 md:p-6">
-            <!-- DESIGN SECTION -->
-            <section id="design" class="app-section active grid-cols-1 xl:grid-cols-4 gap-6">
-                <div class="xl:col-span-1 flex flex-col gap-6">
+        <main class="flex-1 w-full max-w-screen-2xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1 flex flex-col gap-6">
+                <!-- DESIGN SECTION -->
+                <section id="design" class="app-section active flex flex-col gap-6">
                     <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
                         <h3 class="text-lg font-semibold mb-4 text-slate-800">Experiment Setup</h3>
                         <div class="space-y-4">
@@ -71,34 +70,20 @@
                             <div class="flex gap-2"><button id="generate-layout-btn" class="flex-1 w-full bg-teal-600 text-white font-semibold py-2 px-3 rounded-lg shadow-sm hover:bg-teal-700 transition" title="Fill plate automatically based on groups and replicates">Generate</button><button id="randomize-btn" class="flex-1 w-full bg-slate-600 text-white font-semibold py-2 px-3 rounded-lg shadow-sm hover:bg-slate-700 transition" title="Randomize well positions to prevent plate effects">Randomize</button></div>
                         </div>
                     </div>
-                </div>
-                <div class="xl:col-span-3 bg-white p-5 rounded-lg shadow-sm border border-slate-200 flex flex-col">
-                    <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
-                        <h3 id="plate-title-design" class="text-lg font-semibold text-slate-800">Plate Layout</h3>
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <div id="active-group-indicator" class="hidden items-center gap-2 text-sm"><span class="font-medium">Active Group:</span><span id="active-group-label" class="font-bold p-1 px-3 rounded-full text-white"></span></div>
-                            <div class="flex items-center gap-2 border border-slate-300 rounded-lg p-1 bg-slate-50">
-                                <button id="paint-mode-btn" class="px-3 py-1 text-sm rounded-md flex items-center gap-2 transition" title="Paint Mode"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg></button>
-                                <button id="erase-mode-btn" class="px-3 py-1 text-sm rounded-md flex items-center gap-2 transition" title="Erase Mode"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg></button>
-                            </div>
-                            <button onclick="app.clearLayout()" class="bg-slate-200 text-slate-700 text-sm font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition" title="Clear all wells on the plate">Clear Plate</button>
-                        </div>
-                    </div>
-                    <div id="plate-container" class="w-full flex-1 min-h-[300px] flex items-center justify-center rounded-lg bg-slate-50 border-2 border-dashed border-slate-200"></div>
-                    <div id="legend" class="mt-4 flex flex-wrap gap-x-4 gap-y-2"></div>
-                </div>
-            </section>
+                </section>
 
-            <!-- CALCULATORS SECTION -->
-            <section id="calculators" class="app-section grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></section>
-            
-            <!-- DATA INPUT SECTION -->
-            <section id="data-input" class="app-section grid-cols-1 xl:grid-cols-4 gap-6">
-                <div class="xl:col-span-1 flex flex-col gap-6">
+                <!-- DATA INPUT SECTION -->
+                <section id="data-input" class="app-section flex-col gap-6">
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Data Targets</h3>
+                        <p class="text-sm text-slate-500 mb-2">Define the data you want to collect (e.g., IL-6, IL-8, Total Protein).</p>
+                        <div id="data-targets-container" class="flex flex-wrap gap-2 mb-3"></div>
+                        <input type="text" id="add-target-input" class="block w-full text-sm rounded-md border-slate-300 shadow-sm" placeholder="New target name & press Enter...">
+                    </div>
                     <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
                         <h3 class="text-lg font-semibold mb-4 text-slate-800">Paste Data</h3>
-                        <p class="text-sm text-slate-500 mb-2">Paste data from a spreadsheet (TSV or CSV). It should match the plate dimensions.</p>
-                        <textarea id="paste-data-input" rows="8" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 font-mono" placeholder="A1,A2,A3...\nB1,B2,B3..."></textarea>
+                        <p class="text-sm text-slate-500 mb-2">Paste data for the selected target. It should match the plate dimensions.</p>
+                        <textarea id="paste-data-input" rows="8" class="block w-full text-sm rounded-md border-slate-300 shadow-sm font-mono" placeholder="A1,A2,A3...\nB1,B2,B3..."></textarea>
                         <button onclick="app.parsePastedData()" class="mt-3 w-full bg-teal-600 text-white font-semibold py-2 px-3 rounded-lg shadow-sm hover:bg-teal-700 transition">Parse Data</button>
                     </div>
                     <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
@@ -106,78 +91,90 @@
                         <p class="text-sm text-slate-500 mb-2">Click a well on the grid to enter its value manually.</p>
                         <div class="flex items-center gap-3">
                             <span id="selected-well-label" class="text-2xl font-bold text-slate-800 bg-slate-100 w-16 h-12 flex items-center justify-center rounded-md">--</span>
-                            <input type="number" id="selected-well-input" class="block w-full text-lg rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500" placeholder="Value...">
+                            <input type="number" id="selected-well-input" class="block w-full text-lg rounded-md border-slate-300 shadow-sm" placeholder="Value...">
                         </div>
                     </div>
-                </div>
-                 <div class="xl:col-span-3 bg-white p-5 rounded-lg shadow-sm border border-slate-200 flex flex-col">
-                     <h3 class="text-lg font-semibold text-slate-800 mb-4">Raw Data Grid</h3>
-                     <div id="data-grid-container" class="w-full flex-1 min-h-[300px] flex items-center justify-center rounded-lg bg-slate-50"></div>
-                </div>
-            </section>
+                </section>
 
-            <!-- ANALYSIS SECTION -->
-            <section id="analysis" class="app-section grid-cols-1 xl:grid-cols-4 gap-6">
-                 <div class="xl:col-span-1 flex flex-col gap-6">
-                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                <!-- ANALYSIS SECTION -->
+                <section id="analysis" class="app-section flex-col gap-6">
+                     <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
                         <h3 class="text-lg font-semibold mb-4 text-slate-800">Normalization Controls</h3>
                         <p class="text-sm text-slate-500 mb-4">Select groups to use as controls for data normalization (e.g., % activity/inhibition).</p>
                         <div class="space-y-3">
-                            <div><label for="blank-control-select" class="block text-sm font-medium text-slate-600 mb-1">Blank / Background Control</label><select id="blank-control-select" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"><option value="">None</option></select></div>
-                            <div><label for="positive-control-select" class="block text-sm font-medium text-slate-600 mb-1">Positive / 100% Control</label><select id="positive-control-select" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"><option value="">None</option></select></div>
+                            <div><label for="blank-control-select" class="block text-sm font-medium text-slate-600 mb-1">Blank / Background Control</label><select id="blank-control-select" class="block w-full text-sm rounded-md border-slate-300 shadow-sm"><option value="">None</option></select></div>
+                            <div><label for="positive-control-select" class="block text-sm font-medium text-slate-600 mb-1">Positive / 100% Control</label><select id="positive-control-select" class="block w-full text-sm rounded-md border-slate-300 shadow-sm"><option value="">None</option></select></div>
                         </div>
                     </div>
                     <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
                         <h3 class="text-lg font-semibold mb-4 text-slate-800">Analysis Results</h3>
                         <div id="analysis-results-table" class="text-sm"></div>
                     </div>
-                 </div>
-                 <div class="xl:col-span-3 bg-white p-5 rounded-lg shadow-sm border border-slate-200 flex flex-col">
-                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-slate-800">Data Heatmap</h3>
-                        <div class="flex items-center gap-2 border border-slate-300 rounded-lg p-1 bg-slate-50">
-                            <button id="heatmap-raw-btn" class="px-3 py-1 text-sm rounded-md" title="Show raw data values">Raw</button>
-                            <button id="heatmap-norm-btn" class="px-3 py-1 text-sm rounded-md" title="Show normalized data relative to controls">Normalized</button>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Comparison Mode</h3>
+                        <div class="space-y-3">
+                            <div><label for="comparison-groups-select" class="block text-sm font-medium text-slate-600 mb-1">Groups to Compare</label><select id="comparison-groups-select" class="block w-full text-sm rounded-md border-slate-300 shadow-sm" multiple></select></div>
+                            <div id="comparison-markers-container" class="space-y-2"></div>
+                            <div><label for="comparison-target-select" class="block text-sm font-medium text-slate-600 mb-1">Data Target</label><select id="comparison-target-select" class="block w-full text-sm rounded-md border-slate-300 shadow-sm"></select></div>
+                            <button onclick="app.renderComparisonChart()" class="w-full text-sm bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-700 transition">Generate Chart</button>
                         </div>
-                     </div>
-                     <div id="heatmap-container" class="w-full flex-1 min-h-[300px] flex items-center justify-center rounded-lg bg-slate-50"></div>
-                </div>
-            </section>
-            
-             <!-- ADVANCED ANALYSIS SECTION -->
-            <section id="advanced-analysis" class="app-section grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
-                    <h3 class="text-lg font-semibold mb-4 text-slate-800">Assay Quality (Z'-Factor)</h3>
-                    <div id="z-factor-container"></div>
-                </div>
-                 <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
-                    <h3 class="text-lg font-semibold mb-4 text-slate-800">Dose-Response Curve (IC50/EC50)</h3>
-                    <div id="dose-response-container"></div>
-                </div>
-            </section>
-
-            <!-- EXPORT & NOTES SECTION -->
-            <section id="export" class="app-section grid-cols-1 md:grid-cols-2 gap-6">
-                 <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
-                    <h3 class="text-lg font-semibold mb-4 text-slate-800">Export Files</h3>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="app.export('layout-png')" class="bg-slate-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-slate-800 transition" title="Export plate layout as a PNG image">Layout PNG</button>
-                        <button onclick="app.export('layout-svg')" class="bg-slate-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-slate-800 transition" title="Export plate layout as a scalable SVG image">Layout SVG</button>
-                        <button onclick="app.export('layout-csv')" class="bg-slate-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-slate-800 transition" title="Export plate layout as a CSV file">Layout CSV</button>
-                        <button onclick="app.export('results-csv')" class="bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-700 transition" title="Export analysis results (averages, stdev) as a CSV file">Results CSV</button>
+                        <div class="mt-4">
+                            <canvas id="comparison-chart"></canvas>
+                        </div>
                     </div>
-                    <h3 class="text-lg font-semibold my-4 text-slate-800">Save/Load Session</h3>
-                     <div class="space-y-3">
-                        <div class="flex gap-2"><input type="text" id="preset-name" class="block w-full text-sm rounded-md border-slate-300" placeholder="Session name..."><button onclick="app.saveSession()" class="bg-cyan-600 text-white font-semibold py-2 px-3 rounded-lg hover:bg-cyan-700 transition" title="Save current experiment setup to browser storage">Save</button></div>
-                        <div class="flex gap-2"><select id="preset-select" class="block w-full text-sm rounded-md border-slate-300"><option value="">-- Load a session --</option></select><button onclick="app.loadSession()" class="bg-slate-200 text-slate-700 font-semibold py-2 px-3 rounded-lg hover:bg-slate-300 transition" title="Load a saved session">Load</button><button onclick="app.deleteSession()" class="bg-red-100 text-red-700 font-semibold py-2 px-3 rounded-lg hover:bg-red-200 transition" title="Delete selected session">Del</button></div>
-                        <div class="flex gap-2 pt-2"><label for="import-json" class="flex-1 bg-slate-200 text-center text-slate-700 font-semibold py-2 px-3 rounded-lg hover:bg-slate-300 transition cursor-pointer" title="Import a previously exported JSON session file">Import JSON File</label><input type="file" id="import-json" class="hidden" accept=".json"></div>
+                </section>
+
+                <!-- ADVANCED ANALYSIS SECTION -->
+                <section id="advanced-analysis" class="app-section flex-col gap-6">
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Assay Quality (Z'-Factor)</h3>
+                        <div id="z-factor-container"></div>
+                    </div>
+                     <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Dose-Response Curve (IC50/EC50)</h3>
+                        <div id="dose-response-container"></div>
+                    </div>
+                </section>
+
+                <!-- EXPORT & NOTES SECTION -->
+                <section id="export" class="app-section flex-col gap-6">
+                     <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Export Files</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="app.export('layout-png')" class="bg-slate-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-slate-800 transition" title="Export plate layout as a PNG image">Layout PNG</button>
+                            <button onclick="app.export('layout-svg')" class="bg-slate-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-slate-800 transition" title="Export plate layout as a scalable SVG image">Layout SVG</button>
+                            <button onclick="app.export('layout-csv')" class="bg-slate-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-slate-800 transition" title="Export plate layout as a CSV file">Layout CSV</button>
+                            <button onclick="app.export('results-csv')" class="bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-700 transition" title="Export analysis results (averages, stdev) as a CSV file">Results CSV</button>
+                        </div>
+                        <h3 class="text-lg font-semibold my-4 text-slate-800">Save/Load Session</h3>
+                         <div class="space-y-3">
+                            <div class="flex gap-2"><input type="text" id="preset-name" class="block w-full text-sm rounded-md border-slate-300" placeholder="Session name..."><button onclick="app.saveSession()" class="bg-cyan-600 text-white font-semibold py-2 px-3 rounded-lg hover:bg-cyan-700 transition" title="Save current experiment setup to browser storage">Save</button></div>
+                            <div class="flex gap-2"><select id="preset-select" class="block w-full text-sm rounded-md border-slate-300"><option value="">-- Load a session --</option></select><button onclick="app.loadSession()" class="bg-slate-200 text-slate-700 font-semibold py-2 px-3 rounded-lg hover:bg-slate-300 transition" title="Load a saved session">Load</button><button onclick="app.deleteSession()" class="bg-red-100 text-red-700 font-semibold py-2 px-3 rounded-lg hover:bg-red-200 transition" title="Delete selected session">Del</button></div>
+                            <div class="flex gap-2 pt-2"><label for="import-json" class="flex-1 bg-slate-200 text-center text-slate-700 font-semibold py-2 px-3 rounded-lg hover:bg-slate-300 transition cursor-pointer" title="Import a previously exported JSON session file">Import JSON File</label><input type="file" id="import-json" class="hidden" accept=".json">
+                         </div>
                      </div>
                  </div>
                  <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
                     <h3 class="text-lg font-semibold mb-4 text-slate-800">Experiment Notes</h3>
                     <textarea id="exp-notes" rows="12" class="block w-full text-sm rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500" placeholder="e.g., Reagent lot numbers, protocol details, observations..."></textarea>
                  </div>
-            </section>
+            </div>
+
+            <div class="lg:col-span-2 bg-white p-5 rounded-lg shadow-sm border border-slate-200 flex flex-col">
+                <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
+                    <h3 id="plate-title-design" class="text-lg font-semibold text-slate-800">Plate Layout</h3>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <div id="active-group-indicator" class="hidden items-center gap-2 text-sm"><span class="font-medium">Active Group:</span><span id="active-group-label" class="font-bold p-1 px-3 rounded-full text-white"></span></div>
+                        <div class="flex items-center gap-2 border border-slate-300 rounded-lg p-1 bg-slate-50">
+                            <button id="paint-mode-btn" class="px-3 py-1 text-sm rounded-md flex items-center gap-2 transition" title="Paint Mode"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg></button>
+                            <button id="erase-mode-btn" class="px-3 py-1 text-sm rounded-md flex items-center gap-2 transition" title="Erase Mode"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg></button>
+                        </div>
+                        <button onclick="app.clearLayout()" class="bg-slate-200 text-slate-700 text-sm font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition" title="Clear all wells on the plate">Clear Plate</button>
+                    </div>
+                </div>
+                <div id="plate-container" class="w-full flex-1 min-h-[300px] flex items-center justify-center rounded-lg bg-slate-50 border-2 border-dashed border-slate-200"></div>
+                <div id="legend" class="mt-4 flex flex-wrap gap-x-4 gap-y-2"></div>
+            </div>
         </main>
     </div>
 
@@ -188,4 +185,3 @@
     <script src="app.js"></script>
 </body>
 </html>
-
