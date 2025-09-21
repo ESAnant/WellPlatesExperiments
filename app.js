@@ -3,6 +3,56 @@ document.addEventListener('DOMContentLoaded', () => { window.app = new WellPlate
 
 class WellPlatePalApp {
     constructor() {
+        this.DOM = {
+            expName: 'exp-name',
+            plateFormat: 'plate-format',
+            replicates: 'replicates',
+            layoutDirection: 'layout-direction',
+            expNotes: 'exp-notes',
+            groupInput: 'group-input',
+            groupTags: 'group-tags',
+            groupTypeSelect: 'group-type-select',
+            generateLayoutBtn: 'generate-layout-btn',
+            randomizeBtn: 'randomize-btn',
+            paintModeBtn: 'paint-mode-btn',
+            eraseModeBtn: 'erase-mode-btn',
+            selectedWellInput: 'selected-well-input',
+            selectedWellLabel: 'selected-well-label',
+            addTargetInput: 'add-target-input',
+            dataTargetsContainer: 'data-targets-container',
+            pasteDataInput: 'paste-data-input',
+            parseDataBtn: 'parse-data-btn',
+            blankControlSelect: 'blank-control-select',
+            positiveControlSelect: 'positive-control-select',
+            heatmapRawBtn: 'heatmap-raw-btn',
+            heatmapNormBtn: 'heatmap-norm-btn',
+            importJson: 'import-json',
+            presetName: 'preset-name',
+            saveSessionBtn: 'save-session-btn',
+            presetSelect: 'preset-select',
+            loadSessionBtn: 'load-session-btn',
+            deleteSessionBtn: 'delete-session-btn',
+            plateContainer: 'plate-container',
+            legend: 'legend',
+            notificationContainer: 'notification-container',
+            modalContainer: 'modal-container',
+            tooltip: 'tooltip',
+            calculators: 'calculators',
+            zFactorContainer: 'z-factor-container',
+            doseResponseContainer: 'dose-response-container',
+            dataGridContainer: 'data-grid-container',
+            analysisResultsTable: 'analysis-results-table',
+            comparisonGroupsSelect: 'comparison-groups-select',
+            comparisonTargetSelect: 'comparison-target-select',
+            comparisonChart: 'comparison-chart',
+            activeGroupIndicator: 'active-group-indicator',
+            activeGroupLabel: 'active-group-label',
+            plateTitleDesign: 'plate-title-design',
+            clearLayoutBtn: 'clear-layout-btn',
+            mainTabs: '.main-tab',
+            appSections: '.app-section',
+        };
+
         // Master state object
         this.state = {
             settings: { expName: '', plateFormat: '96', replicates: 3, layoutDirection: 'by-row', notes: '' },
@@ -30,68 +80,75 @@ class WellPlatePalApp {
     render() {
         // Sync simple inputs with state
         const { settings, ui } = this.state;
-        document.getElementById('exp-name').value = settings.expName;
-        document.getElementById('plate-format').value = settings.plateFormat;
-        document.getElementById('replicates').value = settings.replicates;
-        document.getElementById('layout-direction').value = settings.layoutDirection;
-        document.getElementById('exp-notes').value = settings.notes;
+        document.getElementById(this.DOM.expName).value = settings.expName;
+        document.getElementById(this.DOM.plateFormat).value = settings.plateFormat;
+        document.getElementById(this.DOM.replicates).value = settings.replicates;
+        document.getElementById(this.DOM.layoutDirection).value = settings.layoutDirection;
+        document.getElementById(this.DOM.expNotes).value = settings.notes;
 
         // Render complex components based on active tab
-        const activeTab = ui.activeSection;
-        if (activeTab === 'design') { 
-            this.renderGroups(); 
-            this.renderPlate(); 
-            this.renderLegend(); 
-            this.renderInteractionMode(); 
-            this.renderActiveGroup(); 
-        } else if (activeTab === 'data-input') { 
-            this.renderDataGrid(); 
-            this.renderDataTargets(); 
-        } else if (activeTab === 'analysis') { 
-            this.renderAnalysisControls(); 
-            this.renderAnalysisResults(); 
-            this.renderHeatmap(); 
-        } else if (activeTab === 'advanced-analysis') { 
-            this.renderZFactor(); 
-            this.renderDoseResponse(); 
-        } else if (activeTab === 'calculators') { 
-            this.buildCalculatorDOM(); 
-        }
+        const renderMap = {
+            design: () => {
+                this.renderGroups();
+                this.renderPlate();
+                this.renderLegend();
+                this.renderInteractionMode();
+                this.renderActiveGroup();
+            },
+            'data-input': () => {
+                this.renderDataGrid();
+                this.renderDataTargets();
+            },
+            analysis: () => {
+                this.renderAnalysisControls();
+                this.renderAnalysisResults();
+                this.renderHeatmap();
+            },
+            'advanced-analysis': () => {
+                this.renderZFactor();
+                this.renderDoseResponse();
+            },
+            calculators: () => {
+                this.buildCalculatorDOM();
+            },
+        };
+
+        renderMap[ui.activeSection]?.();
     }
     
     // --- EVENT LISTENERS --- //
     setupEventListeners() {
         // Settings
-        document.getElementById('exp-name').addEventListener('input', e => this.state.settings.expName = e.target.value);
-        document.getElementById('plate-format').addEventListener('change', e => this.setState(s => { s.settings.plateFormat = e.target.value; s.layout = {}; s.data = { targets: ['Default'], values: {}, activeTarget: 'Default' }; }));
-        document.getElementById('replicates').addEventListener('input', e => this.state.settings.replicates = parseInt(e.target.value) || 1);
-        document.getElementById('layout-direction').addEventListener('change', e => this.state.settings.layoutDirection = e.target.value);
-        document.getElementById('exp-notes').addEventListener('input', e => this.state.settings.notes = e.target.value);
+        document.getElementById(this.DOM.expName).addEventListener('input', e => this.state.settings.expName = e.target.value);
+        document.getElementById(this.DOM.plateFormat).addEventListener('change', e => this.setState(s => { s.settings.plateFormat = e.target.value; s.layout = {}; s.data = { targets: ['Default'], values: {}, activeTarget: 'Default' }; }));
+        document.getElementById(this.DOM.replicates).addEventListener('input', e => this.state.settings.replicates = parseInt(e.target.value) || 1);
+        document.getElementById(this.DOM.layoutDirection).addEventListener('change', e => this.state.settings.layoutDirection = e.target.value);
+        document.getElementById(this.DOM.expNotes).addEventListener('input', e => this.state.settings.notes = e.target.value);
         // Design Actions
-        document.getElementById('group-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); this.addGroup(e.target.value); e.target.value = ''; } });
-        document.getElementById('group-type-select').addEventListener('change', e => this.setGroupType(this.state.ui.activeGroup, e.target.value));
-        document.getElementById('generate-layout-btn').addEventListener('click', () => this.generateLayout());
-        document.getElementById('randomize-btn').addEventListener('click', () => this.randomizeLayout());
-        document.getElementById('paint-mode-btn').addEventListener('click', () => this.setState(s => s.ui.interactionMode = 'paint'));
-        document.getElementById('erase-mode-btn').addEventListener('click', () => this.setState(s => s.ui.interactionMode = 'erase'));
+        document.getElementById(this.DOM.groupInput).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); this.addGroup(e.target.value); e.target.value = ''; } });
+        document.getElementById(this.DOM.groupTypeSelect).addEventListener('change', e => this.setGroupType(this.state.ui.activeGroup, e.target.value));
+        document.getElementById(this.DOM.generateLayoutBtn).addEventListener('click', () => this.generateLayout());
+        document.getElementById(this.DOM.randomizeBtn).addEventListener('click', () => this.randomizeLayout());
+        document.getElementById(this.DOM.paintModeBtn).addEventListener('click', () => this.setState(s => s.ui.interactionMode = 'paint'));
+        document.getElementById(this.DOM.eraseModeBtn).addEventListener('click', () => this.setState(s => s.ui.interactionMode = 'erase'));
         // Data Input
-        document.getElementById('selected-well-input').addEventListener('change', e => this.updateWellData(this.state.ui.selectedWellData, e.target.value));
-        document.getElementById('add-target-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); this.addDataTarget(e.target.value); e.target.value = ''; } });
+        document.getElementById(this.DOM.selectedWellInput).addEventListener('change', e => this.updateWellData(this.state.ui.selectedWellData, e.target.value));
+        document.getElementById(this.DOM.addTargetInput).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); this.addDataTarget(e.target.value); e.target.value = ''; } });
         // Analysis
-        document.getElementById('blank-control-select').addEventListener('change', e => this.setState(s => s.analysis.blankControl = e.target.value));
-        document.getElementById('positive-control-select').addEventListener('change', e => this.setState(s => s.analysis.positiveControl = e.target.value));
-        document.getElementById('heatmap-raw-btn')?.addEventListener('click', () => this.setState(s => s.analysis.heatmapMode = 'raw'));
-        document.getElementById('heatmap-norm-btn')?.addEventListener('click', () => this.setState(s => s.analysis.heatmapMode = 'normalized'));
+        document.getElementById(this.DOM.blankControlSelect).addEventListener('change', e => this.setState(s => s.analysis.blankControl = e.target.value));
+        document.getElementById(this.DOM.positiveControlSelect).addEventListener('change', e => this.setState(s => s.analysis.positiveControl = e.target.value));
+        document.getElementById(this.DOM.heatmapRawBtn)?.addEventListener('click', () => this.setState(s => s.analysis.heatmapMode = 'raw'));
+        document.getElementById(this.DOM.heatmapNormBtn)?.addEventListener('click', () => this.setState(s => s.analysis.heatmapMode = 'normalized'));
         // Import
-        document.getElementById('import-json').addEventListener('change', e => this.importSession(e));
+        document.getElementById(this.DOM.importJson).addEventListener('change', e => this.importSession(e));
     }
 
     // --- UI & TAB MANAGEMENT --- //
     switchTab(sectionId) {
         this.setState(s => s.ui.activeSection = sectionId);
-        document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll(this.DOM.appSections).forEach(s => s.classList.remove('active'));
         document.getElementById(sectionId)?.classList.add('active');
-        document.querySelectorAll('.main-tab').forEach(t => t.classList.toggle('active', t.dataset.tabId === sectionId));
+        document.querySelectorAll(this.DOM.mainTabs).forEach(t => t.classList.toggle('active', t.dataset.tabId === sectionId));
     }
 
     // --- DESIGN TAB LOGIC --- //
@@ -197,7 +254,7 @@ class WellPlatePalApp {
         this.setState(s => s.data.activeTarget = name);
     }
     parsePastedData() {
-        const text = document.getElementById('paste-data-input').value.trim();
+        const text = document.getElementById(this.DOM.pasteDataInput).value.trim();
         const rows = text.split('\n').map(r => r.split(/[\t,]/));
         const plateConfig = this.plateConfigs[this.state.settings.plateFormat];
         if (rows.length > plateConfig.rows || rows[0].length > plateConfig.cols) return this.showNotification('Pasted data dimensions exceed plate format.', 'error');
@@ -218,8 +275,8 @@ class WellPlatePalApp {
     }
     selectWellForDataInput(wellName) {
         this.setState(s => s.ui.selectedWellData = wellName);
-        document.getElementById('selected-well-label').textContent = wellName;
-        const input = document.getElementById('selected-well-input');
+        document.getElementById(this.DOM.selectedWellLabel).textContent = wellName;
+        const input = document.getElementById(this.DOM.selectedWellInput);
         const { activeTarget } = this.state.data;
         input.value = this.state.data.values[wellName]?.[activeTarget] || '';
         input.focus();
@@ -300,6 +357,7 @@ class WellPlatePalApp {
     
     async performFourPL(data) {
         // Pure JavaScript estimation of 4PL parameters
+        // 4PL model: y = bottom + (top - bottom) / (1 + (x / ic50)^hillSlope)
         const concentrations = data.map(d => d.x);
         const responses = data.map(d => d.y);
 
@@ -317,6 +375,7 @@ class WellPlatePalApp {
         if (top < bottom) [top, bottom] = [bottom, top];
 
         // 2. Estimate IC50 via log-linear interpolation
+        // Find the concentration at which the response is halfway between top and bottom.
         const halfResponse = bottom + (top - bottom) / 2;
         const sortedData = [...data].sort((a,b) => a.x - b.x);
         
@@ -347,6 +406,12 @@ class WellPlatePalApp {
         }
         
         // 3. Estimate Hill Slope by linearizing the Hill equation and performing a linear regression
+        // log10((top - y) / (y - bottom)) = hillSlope * log10(x) - hillSlope * log10(ic50)
+        // This is a linear equation of the form Y = mX + c, where:
+        // Y = log10((top - y) / (y - bottom))
+        // X = log10(x)
+        // m = hillSlope
+        // c = -hillSlope * log10(ic50)
         const transformedPoints = [];
         for (const point of data) {
             // Use only points strictly between top and bottom for stable log transformation
@@ -386,7 +451,7 @@ class WellPlatePalApp {
 
     // --- DYNAMIC RENDERING --- //
     renderPlate() { 
-        const container = document.getElementById('plate-container');
+        const container = document.getElementById(this.DOM.plateContainer);
         if (!container) return;
         const plateConfig = this.plateConfigs[this.state.settings.plateFormat];
         if (Object.keys(this.state.layout).length === 0 && this.state.groups.length === 0) {
@@ -445,7 +510,7 @@ class WellPlatePalApp {
         document.body.addEventListener('mouseup', () => this.handleWellInteraction(null, 'end'), { once: true });
     }
     renderDataGrid() {
-        const container = document.getElementById('data-grid-container');
+        const container = document.getElementById(this.DOM.dataGridContainer);
         if (!container) return;
         const plateConfig = this.plateConfigs[this.state.settings.plateFormat];
         container.innerHTML = '';
@@ -479,7 +544,7 @@ class WellPlatePalApp {
         container.appendChild(svg);
     }
     renderDataTargets() {
-        const container = document.getElementById('data-targets-container');
+        const container = document.getElementById(this.DOM.dataTargetsContainer);
         if (!container) return;
         const { targets, activeTarget } = this.state.data;
         container.innerHTML = '';
@@ -494,7 +559,7 @@ class WellPlatePalApp {
         });
     }
     renderHeatmap() {
-        const container = document.getElementById('heatmap-container');
+        const container = document.getElementById(this.DOM.heatmapContainer);
         if (!container) return;
         const plateConfig = this.plateConfigs[this.state.settings.plateFormat];
         container.innerHTML = '';
@@ -538,7 +603,7 @@ class WellPlatePalApp {
                     'data-tooltip': `${wellName}: ${value !== undefined ? value.toFixed(2) : 'N/A'}`
                 });
                 rect.addEventListener('mouseenter', (e) => {
-                    const tooltip = document.getElementById('tooltip');
+                    const tooltip = document.getElementById(this.DOM.tooltip);
                     tooltip.textContent = e.target.getAttribute('data-tooltip');
                     const domRect = e.target.getBoundingClientRect();
                     tooltip.style.left = `${domRect.left + domRect.width / 2 - tooltip.offsetWidth / 2}px`;
@@ -552,7 +617,7 @@ class WellPlatePalApp {
          container.appendChild(svg);
     }
     renderGroups() {
-         const container = document.getElementById('group-tags');
+         const container = document.getElementById(this.DOM.groupTags);
         container.querySelectorAll('.group-tag').forEach(tag => tag.remove());
         const input = container.querySelector('input');
         this.state.groups.forEach(group => {
@@ -568,7 +633,7 @@ class WellPlatePalApp {
         });
     }
     renderLegend() {
-        const legend = document.getElementById('legend');
+        const legend = document.getElementById(this.DOM.legend);
         if(!legend) return;
         legend.innerHTML = '';
         this.state.groups.forEach((group, index) => {
@@ -579,9 +644,9 @@ class WellPlatePalApp {
         });
     }
     renderInteractionMode() {
-        const paintBtn = document.getElementById('paint-mode-btn');
-        const eraseBtn = document.getElementById('erase-mode-btn');
-        const container = document.getElementById('plate-container');
+        const paintBtn = document.getElementById(this.DOM.paintModeBtn);
+        const eraseBtn = document.getElementById(this.DOM.eraseModeBtn);
+        const container = document.getElementById(this.DOM.plateContainer);
         if (!paintBtn || !eraseBtn || !container) return;
         paintBtn.classList.toggle('bg-teal-100', this.state.ui.interactionMode === 'paint');
         eraseBtn.classList.toggle('bg-red-100', this.state.ui.interactionMode === 'erase');
@@ -589,9 +654,9 @@ class WellPlatePalApp {
         container.classList.toggle('erase-mode', this.state.ui.interactionMode === 'erase');
     }
     renderActiveGroup() {
-        const indicator = document.getElementById('active-group-indicator');
-        const label = document.getElementById('active-group-label');
-        const groupTypeSelect = document.getElementById('group-type-select');
+        const indicator = document.getElementById(this.DOM.activeGroupIndicator);
+        const label = document.getElementById(this.DOM.activeGroupLabel);
+        const groupTypeSelect = document.getElementById(this.DOM.groupTypeSelect);
         if (!indicator || !label || !groupTypeSelect) return;
         const { activeGroup } = this.state.ui;
         if (activeGroup) {
@@ -757,7 +822,7 @@ class WellPlatePalApp {
     
     // --- CALCULATORS --- //
     buildCalculatorDOM() {
-        const container = document.getElementById('calculators');
+        const container = document.getElementById(this.DOM.calculators);
         if (!container) return;
         const units = {
             conc: ['M', 'mM', 'µM', 'nM', 'pM'],
@@ -771,30 +836,81 @@ class WellPlatePalApp {
             </div>`;
 
         const calculators = [
-            { id: 'dilution', name: 'Dilution (C1V1)', fields: [createField('c1', 'Stock Conc.', 'µM', 'conc'), createField('c2', 'Final Conc.', 'nM', 'conc'), createField('v2', 'Final Vol.', 'µL', 'vol')], btn: 'Calculate', color: 'emerald', fn: 'calculateDilution' },
-            { id: 'molarity', name: 'Molarity', fields: [createField('mass', 'Mass', 'mg', 'mass'), {html: `<div><label for="mw" class="block text-sm font-medium text-slate-600 mb-1">MW (g/mol)</label><input type="number" id="mw" class="block w-full text-sm rounded-md border-slate-300 shadow-sm"></div>`}, createField('vol', 'Volume', 'mL', 'vol')], btn: 'Calculate', color: 'sky', fn: 'calculateMolarity' },
-            { id: 'cell-seeding', name: 'Cell Seeding', fields: [{html: `<div><label for="cs-stock" class="block text-sm font-medium text-slate-600 mb-1">Stock (cells/mL)</label><input type="number" id="cs-stock" class="block w-full text-sm rounded-md border-slate-300 shadow-sm"></div>`}, {html: `<div><label for="cs-desired" class="block text-sm font-medium text-slate-600 mb-1">Cells/Well</label><input type="number" id="cs-desired" class="block w-full text-sm rounded-md border-slate-300 shadow-sm"></div>`}, createField('cs-vol', 'Vol./Well', 'µL', 'vol')], btn: 'Calculate', color: 'orange', fn: 'calculateCellSeeding' }
+            { id: 'dilution', name: 'Dilution (C1V1)', fields: [createField('c1', 'Stock Conc.', 'µM', 'conc'), createField('c2', 'Final Conc.', 'nM', 'conc'), createField('v2', 'Final Vol.', 'µL', 'vol')], btn: 'Calculate', color: 'emerald', fn: 'calculate("dilution")' },
+            { id: 'molarity', name: 'Molarity', fields: [createField('mass', 'Mass', 'mg', 'mass'), {html: `<div><label for="mw" class="block text-sm font-medium text-slate-600 mb-1">MW (g/mol)</label><input type="number" id="mw" class="block w-full text-sm rounded-md border-slate-300 shadow-sm"></div>`}, createField('vol', 'Volume', 'mL', 'vol')], btn: 'Calculate', color: 'sky', fn: 'calculate("molarity")' },
+            { id: 'cell-seeding', name: 'Cell Seeding', fields: [{html: `<div><label for="cs-stock" class="block text-sm font-medium text-slate-600 mb-1">Stock (cells/mL)</label><input type="number" id="cs-stock" class="block w-full text-sm rounded-md border-slate-300 shadow-sm"></div>`}, {html: `<div><label for="cs-desired" class="block text-sm font-medium text-slate-600 mb-1">Cells/Well</label><input type="number" id="cs-desired" class="block w-full text-sm rounded-md border-slate-300 shadow-sm"></div>`}, createField('cs-vol', 'Vol./Well', 'µL', 'vol')], btn: 'Calculate', color: 'orange', fn: 'calculate("cellSeeding")' }
         ];
         container.innerHTML = calculators.map(calc => `
             <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
                 <h3 class="text-lg font-semibold mb-4 text-slate-800">${calc.name}</h3>
                 <div class="space-y-3">
                     ${calc.fields.map(f => typeof f === 'string' ? f : f.html).join('')}
-                    <button onclick="app.${calc.fn}()" class="w-full text-sm bg-${calc.color}-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-${calc.color}-600 transition">${calc.btn}</button>
+                    <button onclick="app.${calc.fn}" class="w-full text-sm bg-${calc.color}-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-${calc.color}-600 transition">${calc.btn}</button>
                     <div id="${calc.id}-result" class="hidden mt-2 text-sm p-3 bg-${calc.color}-50 border-l-4 border-${calc.color}-400 text-${calc.color}-800 rounded-r-lg"></div>
                 </div>
             </div>`).join('');
     }
     _getUnitFactor(unit) { const factors = {'pM':1e-12,'nM':1e-9,'µM':1e-6,'mM':1e-3,'M':1,'nL':1e-9,'µL':1e-6,'mL':1e-3,'L':1,'ng':1e-9,'µg':1e-6,'mg':1e-3,'g':1,'kg':1e3}; return factors[unit]; }
-    calculateDilution(){ const c1_val = parseFloat(document.getElementById('c1').value); const c1_unit = document.getElementById('c1-unit').value; const c2_val = parseFloat(document.getElementById('c2').value); const c2_unit = document.getElementById('c2-unit').value; const v2_val = parseFloat(document.getElementById('v2').value); const v2_unit = document.getElementById('v2-unit').value; if([c1_val,c2_val,v2_val].some(isNaN)) return; const c1 = c1_val * this._getUnitFactor(c1_unit); const c2 = c2_val * this._getUnitFactor(c2_unit); const v2 = v2_val * this._getUnitFactor(v2_unit); const v1 = (c2 * v2) / c1; const v1_disp = v1 / this._getUnitFactor(v2_unit); const diluent_disp = v2_val - v1_disp; const res = document.getElementById('dilution-result'); res.innerHTML = `Add <strong>${v1_disp.toFixed(2)} ${v2_unit}</strong> of stock to <strong>${diluent_disp.toFixed(2)} ${v2_unit}</strong> of diluent.`; res.classList.remove('hidden'); }
-    calculateMolarity(){ const mass_val = parseFloat(document.getElementById('mass').value); const mass_unit = document.getElementById('mass-unit').value; const mw = parseFloat(document.getElementById('mw').value); const vol_val = parseFloat(document.getElementById('vol').value); const vol_unit = document.getElementById('vol-unit').value; if([mass_val,mw,vol_val].some(isNaN)) return; const mass_g = mass_val * this._getUnitFactor(mass_unit) / this._getUnitFactor('g'); const vol_l = vol_val * this._getUnitFactor(vol_unit); const moles = mass_g / mw; const molarity = moles / vol_l; const res = document.getElementById('molarity-result'); res.innerHTML = `Result: <strong>${(molarity*1000).toPrecision(3)} mM</strong> (or ${molarity.toPrecision(3)} M).`; res.classList.remove('hidden'); }
-    calculateCellSeeding(){ const stock = parseFloat(document.getElementById('cs-stock').value); const desired = parseFloat(document.getElementById('cs-desired').value); const vol_val = parseFloat(document.getElementById('cs-vol').value); const vol_unit = document.getElementById('cs-vol-unit').value; if([stock,desired,vol_val].some(isNaN)) return; const vol_ml = vol_val * this._getUnitFactor(vol_unit) / this._getUnitFactor('mL'); const stockVol_ml = desired / stock; const stockVol_disp = stockVol_ml * this._getUnitFactor('mL') / this._getUnitFactor(vol_unit); const mediaVol_disp = vol_val - stockVol_disp; if(mediaVol_disp < 0) return this.showNotification('Stock concentration is too low.', 'error'); const res = document.getElementById('cell-seeding-result'); res.innerHTML = `Per well, add:<br><strong>${stockVol_disp.toFixed(2)} ${vol_unit}</strong> cell stock<br><strong>${mediaVol_disp.toFixed(2)} ${vol_unit}</strong> media`; res.classList.remove('hidden'); }
+    calculate(type) {
+        switch (type) {
+            case 'dilution': {
+                const c1_val = parseFloat(document.getElementById('c1').value);
+                const c1_unit = document.getElementById('c1-unit').value;
+                const c2_val = parseFloat(document.getElementById('c2').value);
+                const c2_unit = document.getElementById('c2-unit').value;
+                const v2_val = parseFloat(document.getElementById('v2').value);
+                const v2_unit = document.getElementById('v2-unit').value;
+                if ([c1_val, c2_val, v2_val].some(isNaN)) return;
+                const c1 = c1_val * this._getUnitFactor(c1_unit);
+                const c2 = c2_val * this._getUnitFactor(c2_unit);
+                const v2 = v2_val * this._getUnitFactor(v2_unit);
+                const v1 = (c2 * v2) / c1;
+                const v1_disp = v1 / this._getUnitFactor(v2_unit);
+                const diluent_disp = v2_val - v1_disp;
+                const res = document.getElementById('dilution-result');
+                res.innerHTML = `Add <strong>${v1_disp.toFixed(2)} ${v2_unit}</strong> of stock to <strong>${diluent_disp.toFixed(2)} ${v2_unit}</strong> of diluent.`;
+                res.classList.remove('hidden');
+                break;
+            }
+            case 'molarity': {
+                const mass_val = parseFloat(document.getElementById('mass').value);
+                const mass_unit = document.getElementById('mass-unit').value;
+                const mw = parseFloat(document.getElementById('mw').value);
+                const vol_val = parseFloat(document.getElementById('vol').value);
+                const vol_unit = document.getElementById('vol-unit').value;
+                if ([mass_val, mw, vol_val].some(isNaN)) return;
+                const mass_g = mass_val * this._getUnitFactor(mass_unit) / this._getUnitFactor('g');
+                const vol_l = vol_val * this._getUnitFactor(vol_unit);
+                const moles = mass_g / mw;
+                const molarity = moles / vol_l;
+                const res = document.getElementById('molarity-result');
+                res.innerHTML = `Result: <strong>${(molarity * 1000).toPrecision(3)} mM</strong> (or ${molarity.toPrecision(3)} M).`;
+                res.classList.remove('hidden');
+                break;
+            }
+            case 'cellSeeding': {
+                const stock = parseFloat(document.getElementById('cs-stock').value);
+                const desired = parseFloat(document.getElementById('cs-desired').value);
+                const vol_val = parseFloat(document.getElementById('cs-vol').value);
+                const vol_unit = document.getElementById('cs-vol-unit').value;
+                if ([stock, desired, vol_val].some(isNaN)) return;
+                const stockVol_ml = desired / stock;
+                const stockVol_disp = stockVol_ml * this._getUnitFactor('mL') / this._getUnitFactor(vol_unit);
+                const mediaVol_disp = vol_val - stockVol_disp;
+                if (mediaVol_disp < 0) return this.showNotification('Stock concentration is too low.', 'error');
+                const res = document.getElementById('cell-seeding-result');
+                res.innerHTML = `Per well, add:<br><strong>${stockVol_disp.toFixed(2)} ${vol_unit}</strong> cell stock<br><strong>${mediaVol_disp.toFixed(2)} ${vol_unit}</strong> media`;
+                res.classList.remove('hidden');
+                break;
+            }
+        }
+    }
     
     // --- SESSION & EXPORT --- //
-    saveSession() { const name = document.getElementById('preset-name').value.trim(); if (!name) return this.showNotification('Please enter a session name.', 'error'); const data = { ...this.state, ui: undefined }; const sessions = JSON.parse(localStorage.getItem('wellPlatePalSessions') || '{}'); sessions[name] = data; localStorage.setItem('wellPlatePalSessions', JSON.stringify(sessions)); this.loadSessions(); this.showNotification(`Session "${name}" saved!`); }
-    loadSession() { const name = document.getElementById('preset-select').value; if (!name) return; const sessions = JSON.parse(localStorage.getItem('wellPlatePalSessions') || '{}'); const p = sessions[name]; if(p) { this.setState(s => { Object.assign(s, p); s.ui = { activeSection: 'design', activeGroup: p.groups[0]?.name || null, interactionMode: 'paint', isPainting: false, selectedWellData: null }; }); this.showNotification(`Session "${name}" loaded.`); } }
-    deleteSession() { const name = document.getElementById('preset-select').value; if (!name) return; this.showConfirmation(`Delete session "${name}"?`, () => { const sessions = JSON.parse(localStorage.getItem('wellPlatePalSessions') || '{}'); delete sessions[name]; localStorage.setItem('wellPlatePalSessions', JSON.stringify(sessions)); this.loadSessions(); this.showNotification(`Session "${name}" deleted.`); }); }
-    loadSessions() { const sessions = JSON.parse(localStorage.getItem('wellPlatePalSessions') || '{}'); const select = document.getElementById('preset-select'); select.innerHTML = '<option value="">-- Load a session --</option>'; Object.keys(sessions).forEach(name => { const opt = document.createElement('option'); opt.value = name; opt.textContent = name; select.appendChild(opt); }); }
+    saveSession() { const name = document.getElementById(this.DOM.presetName).value.trim(); if (!name) return this.showNotification('Please enter a session name.', 'error'); const data = { ...this.state, ui: undefined }; const sessions = JSON.parse(localStorage.getItem('wellPlatePalSessions') || '{}'); sessions[name] = data; localStorage.setItem('wellPlatePalSessions', JSON.stringify(sessions)); this.loadSessions(); this.showNotification(`Session "${name}" saved!`); }
+    loadSession() { const name = document.getElementById(this.DOM.presetSelect).value; if (!name) return; const sessions = JSON.parse(localStorage.getItem('wellPlatePalSessions') || '{}'); const p = sessions[name]; if(p) { this.setState(s => { Object.assign(s, p); s.ui = { activeSection: 'design', activeGroup: p.groups[0]?.name || null, interactionMode: 'paint', isPainting: false, selectedWellData: null }; }); this.showNotification(`Session "${name}" loaded.`); } }
+    deleteSession() { const name = document.getElementById(this.DOM.presetSelect).value; if (!name) return; this.showConfirmation(`Delete session "${name}"?`, () => { const sessions = JSON.parse(localStorage.getItem('wellPlatePalSessions') || '{}'); delete sessions[name]; localStorage.setItem('wellPlatePalSessions', JSON.stringify(sessions)); this.loadSessions(); this.showNotification(`Session "${name}" deleted.`); }); }
+    loadSessions() { const sessions = JSON.parse(localStorage.getItem('wellPlatePalSessions') || '{}'); const select = document.getElementById(this.DOM.presetSelect); select.innerHTML = '<option value="">-- Load a session --</option>'; Object.keys(sessions).forEach(name => { const opt = document.createElement('option'); opt.value = name; opt.textContent = name; select.appendChild(opt); }); }
     importSession(event) {
         const file = event.target.files[0]; if (!file) return;
         const reader = new FileReader();
@@ -877,10 +993,30 @@ class WellPlatePalApp {
         document.getElementById('dr-conc-input').value = series.map(s => Number(s.toPrecision(3))).join(',');
     }
 
+    showLoading(message = 'Loading...') {
+        const container = document.getElementById(this.DOM.modalContainer);
+        const modal = document.createElement('div');
+        modal.id = 'loading-modal';
+        modal.className = 'fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[1052]';
+        modal.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4"><p class="text-slate-700 mb-4">${message}</p></div>`;
+        container.appendChild(modal);
+    }
+
+    hideLoading() {
+        const modal = document.getElementById('loading-modal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+
     async analyzeDoseResponse() {
+        this.showLoading('Analyzing dose-response curve...');
         const groupName = document.getElementById('dr-group-select').value;
         const concText = document.getElementById('dr-conc-input').value;
-        if (!groupName || !concText) return this.showNotification('Please select a group and enter concentrations.', 'error');
+        if (!groupName || !concText) {
+            this.hideLoading();
+            return this.showNotification('Please select a group and enter concentrations.', 'error');
+        }
         
         const concentrations = concText.split(',').map(c => parseFloat(c.trim())).filter(c => !isNaN(c));
         
@@ -894,6 +1030,7 @@ class WellPlatePalApp {
         const replicates = Math.floor(rawData.length / concentrations.length);
         
         if (concentrations.length === 0 || rawData.length === 0 || replicates === 0 || concentrations.length * replicates !== rawData.length) {
+            this.hideLoading();
             return this.showNotification(`Data mismatch: The number of data points (${rawData.length}) is not an even multiple of the number of concentrations (${concentrations.length}).`, 'error');
         }
 
@@ -913,6 +1050,7 @@ class WellPlatePalApp {
             <span class="font-semibold">HillSlope:</span> <span class="font-bold">${fit.hillSlope.toFixed(2)}</span>`;
             
         this.plotDoseResponse(averagedData, fit);
+        this.hideLoading();
     }
     
     plotDoseResponse(data, fit) {
