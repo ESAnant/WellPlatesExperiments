@@ -42,6 +42,7 @@ class WellPlatePalApp {
         if (activeTab === 'data-input') { this.renderDataGrid(); this.renderDataTargets(); }
         if (activeTab === 'analysis') { this.renderAnalysisControls(); this.renderAnalysisResults(); this.renderHeatmap(); }
         if (activeTab === 'advanced-analysis') { this.renderZFactor(); this.renderDoseResponse(); }
+        if (activeTab === 'calculators') { this.buildCalculatorDOM(); }
     }
     
     // --- EVENT LISTENERS --- //
@@ -65,8 +66,8 @@ class WellPlatePalApp {
         // Analysis
         document.getElementById('blank-control-select').addEventListener('change', e => this.setState(s => s.analysis.blankControl = e.target.value));
         document.getElementById('positive-control-select').addEventListener('change', e => this.setState(s => s.analysis.positiveControl = e.target.value));
-        document.getElementById('heatmap-raw-btn').addEventListener('click', () => this.setState(s => s.analysis.heatmapMode = 'raw'));
-        document.getElementById('heatmap-norm-btn').addEventListener('click', () => this.setState(s => s.analysis.heatmapMode = 'normalized'));
+        document.getElementById('heatmap-raw-btn')?.addEventListener('click', () => this.setState(s => s.analysis.heatmapMode = 'raw'));
+        document.getElementById('heatmap-norm-btn')?.addEventListener('click', () => this.setState(s => s.analysis.heatmapMode = 'normalized'));
         // Import
         document.getElementById('import-json').addEventListener('change', e => this.importSession(e));
     }
@@ -743,6 +744,7 @@ class WellPlatePalApp {
     // --- CALCULATORS --- //
     buildCalculatorDOM() {
         const container = document.getElementById('calculators');
+        if (!container) return;
         const units = {
             conc: ['M', 'mM', 'µM', 'nM', 'pM'],
             vol: ['L', 'mL', 'µL', 'nL'],
@@ -835,12 +837,15 @@ class WellPlatePalApp {
         modal.querySelector('button:last-of-type').onclick = () => { onConfirm(); modal.remove(); };
     };
     
-    getGroupData(groupName) {
+    getGroupData(groupName, target) {
         const { layout, data } = this.state;
-        const { values, activeTarget } = data;
+        const { values } = data;
+        const activeTarget = target || data.activeTarget;
         const wells = this.getWellList().filter(w => layout[w]?.group === groupName);
         const raw = wells.map(w => values[w]?.[activeTarget]).filter(v => v !== undefined);
-        return { wells, raw };
+        const mean = raw.length > 0 ? raw.reduce((a, b) => a + b, 0) / raw.length : 0;
+        const stdDev = raw.length > 1 ? Math.sqrt(raw.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / (raw.length - 1)) : 0;
+        return { wells, raw, mean, stdDev };
     }
     
     generateConcentrationSeries() {
