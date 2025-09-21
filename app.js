@@ -15,37 +15,14 @@ class WellPlatePalApp {
         this.plateConfigs = {"96":{rows:8,cols:12,rowLabels:['A','B','C','D','E','F','G','H']},"48":{rows:6,cols:8,rowLabels:['A','B','C','D','E','F']},"24":{rows:4,cols:6,rowLabels:['A','B','C','D']},"12":{rows:3,cols:4,rowLabels:['A','B','C']},"6":{rows:2,cols:3,rowLabels:['A','B']}};
         this.baseColors = ['#2dd4bf', '#60a5fa', '#c084fc', '#f87171', '#fbbf24', '#a3e635', '#f472b6', '#34d399', '#818cf8', '#fca5a5', '#fde047', '#4ade80'];
         this.doseResponseChart = null;
-        this.pyodide = null;
         this.init();
     }
 
-    async init() {
+    init() {
         this.buildCalculatorDOM();
         this.setupEventListeners();
         this.loadSessions();
         this.switchTab(this.state.ui.activeSection);
-        await this.initPyodide();
-    }
-
-    async initPyodide() {
-        try {
-            this.pyodide = await loadPyodide();
-            await this.pyodide.loadPackage(['numpy', 'scipy']);
-            const response = await fetch('analysis.py');
-            const pythonCode = await response.text();
-            this.pyodide.runPython(pythonCode);
-            const statusDiv = document.getElementById('pyodide-status');
-            statusDiv.querySelector('div').classList.remove('bg-amber-400', 'animate-pulse');
-            statusDiv.querySelector('div').classList.add('bg-teal-400');
-            statusDiv.querySelector('span').textContent = 'Python Ready';
-        } catch (error) {
-            console.error("Pyodide initialization failed:", error);
-            const statusDiv = document.getElementById('pyodide-status');
-            statusDiv.querySelector('div').classList.remove('bg-amber-400', 'animate-pulse');
-            statusDiv.querySelector('div').classList.add('bg-red-400');
-            statusDiv.querySelector('span').textContent = 'Python Failed';
-            this.showNotification('Could not load Python analysis engine. Using JS fallback.', 'warning');
-        }
     }
 
     // --- CORE STATE & RENDER --- //
@@ -307,31 +284,27 @@ class WellPlatePalApp {
     }
     
     async performFourPL(data) {
-        if (this.pyodide) {
-            try {
-                const concentrations = JSON.stringify(data.map(d => d.x));
-                const responses = JSON.stringify(data.map(d => d.y));
-                const resultsPy = this.pyodide.globals.get('analyze_dose_response_py')(concentrations, responses);
-                const results = JSON.parse(resultsPy);
-                if(results.success) {
-                    return results;
-                } else {
-                    this.showNotification(`Python error: ${results.error}`, 'error');
-                    return { ic50: NaN, top: 0, bottom: 0, hillSlope: 1 };
-                }
-            } catch(e) {
-                this.showNotification(`Pyodide execution failed: ${e.message}`, 'error');
-                return { ic50: NaN, top: 0, bottom: 0, hillSlope: 1 };
-            }
+        // Pure JavaScript estimation of 4PL parameters
+        const concentrations = data.map(d => d.x);
+        const responses = data.map(d => d.y);
+
+        if (concentrations.length < 4) {
+            this.showNotification("At least 4 data points are required for a 4PL fit.", "error");
+            return { ic50: NaN, top: 0, bottom: 0, hillSlope: 1 };
         }
 
-        // Fallback JS interpolation
-        const sortedData = [...data].sort((a,b) => a.x - b.x);
-        const y = sortedData.map(p => p.y);
-        const bottom = Math.min(...y);
-        const top = Math.max(...y);
-        if (top === bottom) return { ic50: NaN, top, bottom, slope: 0 };
+        // 1. Estimate Top and Bottom from min/max of responses
+        let top = Math.max(...responses);
+        let bottom = Math.min(...responses);
+        if (top === bottom) return { ic50: NaN, top, bottom, hillSlope: 0 };
+        
+        // Ensure Top is greater than Bottom for calculations
+        if (top < bottom) [top, bottom] = [bottom, top];
+
+        // 2. Estimate IC50 via log-linear interpolation
         const halfResponse = bottom + (top - bottom) / 2;
+        const sortedData = [...data].sort((a,b) => a.x - b.x);
+        
         let p1, p2;
         for(let i = 0; i < sortedData.length - 1; i++){
             if((sortedData[i].y >= halfResponse && sortedData[i+1].y <= halfResponse) || (sortedData[i].y <= halfResponse && sortedData[i+1].y >= halfResponse)){
@@ -340,17 +313,59 @@ class WellPlatePalApp {
                 break;
             }
         }
-        if(!p1 || !p2 || p1.x <= 0 || p2.x <= 0) return { ic50: NaN, top, bottom, hillSlope:1};
-        const logP1x = Math.log10(p1.x);
-        const logP2x = Math.log10(p2.x);
-        const slope = (p2.y - p1.y) / (logP2x - logP1x);
-        if (slope === 0) return { ic50: NaN, top, bottom, hillSlope: 0 };
-        const logIC50 = logP1x + (halfResponse - p1.y) / slope;
+        
+        let ic50;
+        if (p1 && p2 && p1.x > 0 && p2.x > 0) {
+             const logP1x = Math.log10(p1.x);
+             const logP2x = Math.log10(p2.x);
+             const slope = (p2.y - p1.y) / (logP2x - logP1x);
+             if (slope !== 0) {
+                const logIC50 = logP1x + (halfResponse - p1.y) / slope;
+                ic50 = Math.pow(10, logIC50);
+             } else {
+                ic50 = (p1.x + p2.x) / 2; // Fallback if slope is horizontal
+             }
+        } else {
+            // If we can't bracket the 50% point, use the median concentration as a guess.
+            const sortedConc = concentrations.filter(c => c > 0).sort((a,b) => a-b);
+            ic50 = sortedConc[Math.floor(sortedConc.length / 2)];
+        }
+        
+        // 3. Estimate Hill Slope by linearizing the Hill equation and performing a linear regression
+        const transformedPoints = [];
+        for (const point of data) {
+            // Use only points strictly between top and bottom for stable log transformation
+            if (point.y > bottom && point.y < top && point.x > 0) {
+                const y_transformed = Math.log10((top - point.y) / (point.y - bottom));
+                const x_transformed = Math.log10(point.x);
+                if (isFinite(y_transformed) && isFinite(x_transformed)) {
+                    transformedPoints.push({ x: x_transformed, y: y_transformed });
+                }
+            }
+        }
+
+        let hillSlope = 1.0; // Default if regression fails
+        if (transformedPoints.length >= 2) {
+            const n = transformedPoints.length;
+            const sumX = transformedPoints.reduce((acc, p) => acc + p.x, 0);
+            const sumY = transformedPoints.reduce((acc, p) => acc + p.y, 0);
+            const sumXY = transformedPoints.reduce((acc, p) => acc + p.x * p.y, 0);
+            const sumX2 = transformedPoints.reduce((acc, p) => acc + p.x * p.x, 0);
+
+            const numerator = (n * sumXY) - (sumX * sumY);
+            const denominator = (n * sumX2) - (sumX * sumX);
+            
+            if (denominator !== 0) {
+                // The slope of the linearized plot is the negative Hill slope
+                hillSlope = -(numerator / denominator);
+            }
+        }
+        
         return {
-            ic50: Math.pow(10, logIC50),
+            ic50: ic50 || 0,
             top: top,
             bottom: bottom,
-            hillSlope: 1 // Simplified HillSlope
+            hillSlope: hillSlope,
         };
     }
 
@@ -941,4 +956,3 @@ class WellPlatePalApp {
         document.body.removeChild(a);
     }
 }
-

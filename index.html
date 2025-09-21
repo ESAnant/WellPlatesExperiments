@@ -6,7 +6,6 @@
     <title>WellPlate Pal - Advanced Experiment Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -28,16 +27,13 @@
                     <button onclick="app.switchTab('advanced-analysis')" data-tab-id="advanced-analysis" class="main-tab text-sm font-semibold px-3 py-1 rounded-md transition-colors">Advanced Analysis</button>
                     <button onclick="app.switchTab('export')" data-tab-id="export" class="main-tab text-sm font-semibold px-3 py-1 rounded-md transition-colors">Export & Notes</button>
                 </nav>
-                 <div id="pyodide-status" class="flex items-center gap-2 text-sm text-slate-500">
-                    <div class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></div>
-                    <span>Initializing Python...</span>
-                </div>
+                 <div class="flex items-center gap-2 text-sm text-slate-500">
+                    </div>
             </div>
         </header>
 
         <main class="flex-1 w-full max-w-screen-2xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-1 flex flex-col gap-6">
-                <!-- DESIGN SECTION -->
                 <section id="design" class="app-section active flex flex-col gap-6">
                     <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
                         <h3 class="text-lg font-semibold mb-4 text-slate-800">Experiment Setup</h3>
@@ -72,7 +68,6 @@
                     </div>
                 </section>
 
-                <!-- DATA INPUT SECTION -->
                 <section id="data-input" class="app-section flex-col gap-6">
                     <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
                         <h3 class="text-lg font-semibold mb-4 text-slate-800">Data Targets</h3>
@@ -96,7 +91,6 @@
                     </div>
                 </section>
 
-                <!-- ANALYSIS SECTION -->
                 <section id="analysis" class="app-section flex-col gap-6">
                      <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
                         <h3 class="text-lg font-semibold mb-4 text-slate-800">Normalization Controls</h3>
@@ -124,7 +118,6 @@
                     </div>
                 </section>
 
-                <!-- ADVANCED ANALYSIS SECTION -->
                 <section id="advanced-analysis" class="app-section flex-col gap-6">
                     <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
                         <h3 class="text-lg font-semibold mb-4 text-slate-800">Assay Quality (Z'-Factor)</h3>
@@ -136,7 +129,6 @@
                     </div>
                 </section>
 
-                <!-- EXPORT & NOTES SECTION -->
                 <section id="export" class="app-section flex-col gap-6">
                      <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
                         <h3 class="text-lg font-semibold mb-4 text-slate-800">Export Files</h3>
